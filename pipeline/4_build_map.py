@@ -10,10 +10,7 @@ from pathlib import Path
 import numpy as np
 ROOT = Path(__file__).resolve().parent.parent; DATA = ROOT / "data"
 recs = json.loads((DATA / "papers_evidence.json").read_text())
-# The organisers' text (claim, metric, comparison, criterion, authors, summaries) is not kept in the evidence files.
-# It is read from data/claims.json, which step 1 downloads from the organisers' dataset, and placed in the page for display and search.
-if not (DATA / "claims.json").exists(): raise SystemExit("data/claims.json is missing: run  uv run python pipeline/1_fetch_claims.py  first (about 5 seconds)")
-ORG = {c["arxiv_id"]: c for c in json.loads((DATA / "claims.json").read_text())}
+# The organisers' text columns travel inside each record's "official" block, so the page can be rebuilt from the shipped data alone.
 q8 = lambda M: np.clip(np.round(M / np.linalg.norm(M, axis=1, keepdims=True) * 127), -127, 127).astype(np.int8)
 ES = q8(np.load(DATA / "embeddings_search.npy")); assert ES.shape[0] == len(recs)
 voc = json.loads((DATA / "search_terms.json").read_text()); TV = q8(np.load(DATA / "search_vectors.npy").astype("float32")); assert TV.shape[0] == len(voc["names"])
@@ -22,7 +19,7 @@ b64 = lambda M: base64.b64encode(M.tobytes()).decode()
 r1 = lambda v: round(v, 1) if isinstance(v, float) else v
 data = []
 for r in recs:
-    L, P, S, K, M, A = r["links"], r["paper"], r["repo_scan"] or {}, r["scores"], r["map"], r["auto_labels"]; repo = L["repo"] or {}; O = ORG[r["arxiv_id"]]
+    L, P, S, K, M, A = r["links"], r["paper"], r["repo_scan"] or {}, r["scores"], r["map"], r["auto_labels"]; repo = L["repo"] or {}; O = r["official"]
     lk = lambda xs: [[x["url"], x["pages"][:2], int(x["likely_own"])] for x in xs]
     data.append({"id": r["arxiv_id"], "t": r["title"], "au": (O.get("authors") or [])[:12], "pres": r["labels"]["presentation"], "trk": r["labels"]["track"], "diff": r["labels"]["difficulty"],
                  "kind": r["labels"]["claim_kind"], "pages": P["pages"], "mb": P["main_body_pages"], "cpg": P["claim_page"], "capp": bool(P["claim_in_appendix"]), "mins": r1(P["read_mins"]),

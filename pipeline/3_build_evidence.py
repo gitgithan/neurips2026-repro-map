@@ -62,7 +62,8 @@ for r in claims:
         "labels": {"presentation": r["presentation"], "track": r["track"], "difficulty": r["difficulty"], "claim_kind": r["image_kind"]},
         "claim_source": r.get("claim_source"),     # where the organisers say the claim is, e.g. "Table 2, page 6"
         # copied unchanged from the organisers' dataset so that a row can be read on its own; that dataset is the authority
-        "official": {"claim": r.get("claim"), "metric": r.get("metric"), "comparison": r.get("comparison"), "falsification_criterion": r.get("falsification_criterion"),
+        "official": {"authors": r.get("authors") or [], "background": r.get("background"), "method": r.get("method"), "claim": r.get("claim"), "claim_caption": r.get("caption"),
+                     "metric": r.get("metric"), "comparison": r.get("comparison"), "falsification_criterion": r.get("falsification_criterion"),
                      "copied_from": "https://huggingface.co/datasets/Neurips-2026-MLIntern-Repro/papers", "dataset_revision": r.get("dataset_revision")},
         "links": {"official_claim_record": f"https://huggingface.co/datasets/Neurips-2026-MLIntern-Repro/papers/viewer/default/train?row={r['row']}" if r.get("row") is not None else None,
                   "arxiv": r.get("arxiv_url"), "pdf": f"https://arxiv.org/pdf/{aid}", "openreview": r.get("openreview_url"), "papers_with_code": r.get("papers_with_code_url"),
@@ -86,7 +87,7 @@ for r in claims:
     })
 
 # ---- map: embedding of title + claim only -> 2D layout, nearest neighbours, automatic topic names
-SRC = {c["arxiv_id"]: c for c in claims}     # the organisers' rows; only the four "official" fields above are copied into the evidence files
+SRC = {c["arxiv_id"]: c for c in claims}     # the organisers' rows; their text columns are copied into each record's "official" block
 texts = [f"{r['title']}. {SRC[r['arxiv_id']]['claim']}" for r in recs]; emb_path = DATA / "embeddings.npy"
 if args.no_embed and emb_path.exists() and np.load(emb_path).shape[0] == len(texts): emb = np.load(emb_path); print("embeddings: reused", emb.shape)
 else:
@@ -157,7 +158,9 @@ CSV_COLUMNS = [
     ("presentation", "labels.presentation", lambda r: r["labels"]["presentation"]), ("track", "labels.track", lambda r: r["labels"]["track"]),
     ("difficulty", "labels.difficulty", lambda r: r["labels"]["difficulty"]), ("claim_kind", "labels.claim_kind", lambda r: r["labels"]["claim_kind"]),
     ("claim_source", "claim_source", lambda r: r["claim_source"]),
-    ("official_claim", "official.claim", lambda r: r["official"]["claim"]), ("official_metric", "official.metric", lambda r: r["official"]["metric"]),
+    ("official_authors", "official.authors (joined)", lambda r: "; ".join(r["official"]["authors"])),
+    ("official_background", "official.background", lambda r: r["official"]["background"]), ("official_method", "official.method", lambda r: r["official"]["method"]),
+    ("official_claim", "official.claim", lambda r: r["official"]["claim"]), ("official_claim_caption", "official.claim_caption", lambda r: r["official"]["claim_caption"]), ("official_metric", "official.metric", lambda r: r["official"]["metric"]),
     ("official_comparison", "official.comparison", lambda r: r["official"]["comparison"]),
     ("official_falsification_criterion", "official.falsification_criterion", lambda r: r["official"]["falsification_criterion"]),
     ("repo_url", "links.repo.url", lambda r: _repo(r).get("url")), ("repo_status", "links.repo.status (no_link_found when links.repo is null)", lambda r: _repo(r).get("status") or "no_link_found"),

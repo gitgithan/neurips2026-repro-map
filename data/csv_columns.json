@@ -28,8 +28,24 @@
   "json_path": "claim_source"
  },
  {
+  "csv_column": "official_authors",
+  "json_path": "official.authors (joined)"
+ },
+ {
+  "csv_column": "official_background",
+  "json_path": "official.background"
+ },
+ {
+  "csv_column": "official_method",
+  "json_path": "official.method"
+ },
+ {
   "csv_column": "official_claim",
   "json_path": "official.claim"
+ },
+ {
+  "csv_column": "official_claim_caption",
+  "json_path": "official.claim_caption"
  },
  {
   "csv_column": "official_metric",

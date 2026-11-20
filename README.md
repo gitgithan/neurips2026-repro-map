@@ -55,7 +55,7 @@ Every paper has one record in `data/papers_evidence.json`. The page's detail pan
 |---|---|---|
 | `labels` | oral / spotlight / poster, track, difficulty, table-or-figure claim | The official claim list, unchanged |
 | `claim_source` | Where the organisers say the claim is, e.g. "Table 2, page 6" | The organisers' dataset |
-| `official` | The claim to verify, the metric, what it is compared against, and the falsification criterion (what result would count as overturning the claim), with the dataset revision they were copied from | The organisers' dataset, unchanged |
+| `official` | Authors, background and method summaries, the claim to verify and its caption, the metric, what it is compared against, and the falsification criterion (what result would count as overturning the claim), with the dataset revision they were copied from | The organisers' dataset, unchanged |
 | `links.repo` | The repository judged to be the paper's own, how it was found (PDF or project page), confidence, whether it is alive, the commit that was scanned | PDF link extraction + an HTTP check + a shallow clone |
 | `links.github_in_pdf`, `huggingface_in_pdf`, `project_pages`, `anonymous_code` | Every other link of that kind in the PDF, with page numbers, surrounding text, and whether it looks like the authors' own or cited third-party work | PDF link extraction |
 | `links.openreview`, `arxiv`, `papers_with_code` | Where to read reviews and reach the authors | The official claim list |
@@ -72,11 +72,11 @@ Every paper has one record in `data/papers_evidence.json`. The page's detail pan
 `data/papers_evidence.json` and `data/papers_evidence.csv` describe the same 1,046 papers and cannot disagree.
 
 - **The JSON is the full record**: every link with its page and context, every scan finding with the quoted `file:line`, the map position and neighbours.
-- **The CSV is a flat view of the JSON.** Each of its 43 columns is computed from one JSON record by a fixed rule (a value, a count, or a list joined with `;`). The rules are listed in `data/csv_columns.json` as `csv_column → json_path`.
+- **The CSV is a flat view of the JSON.** Each of its 47 columns is computed from one JSON record by a fixed rule (a value, a count, or a list joined with `;`). The rules are listed in `data/csv_columns.json` as `csv_column → json_path`.
 - **This is checked on every build.** After writing both files, the pipeline reads them back and compares every cell of the CSV with the value computed from the JSON; the build fails if any differ.
-- **Four columns are the organisers', not ours.** `official_claim`, `official_metric`, `official_comparison` and `official_falsification_criterion` (the `official` block in the JSON) are copied unchanged from the organisers' dataset, at the revision recorded in `official.dataset_revision`, so that a row can be read on its own. Everything else is what this project adds. The organisers' dataset is the authority: if it is corrected later, these copies are out of date until the pipeline is re-run. Authors and the background and method summaries are not copied.
+- **Columns starting with `official_` are the organisers', not ours.** Authors, the background and method summaries, the claim and its caption, the metric, the comparison and the falsification criterion (the `official` block in the JSON) are copied unchanged from the organisers' dataset, at the revision recorded in `official.dataset_revision`. With them, the files hold every text column of the organisers' dataset plus what this project adds, so one file is enough. Only the organisers' picture of each claimed table or figure is not copied; `official_claim_record` links to it. The organisers' dataset is the authority: if it is corrected later, these copies are out of date until the pipeline is re-run.
 
-The page (`index.html`) is different: to show a claim, it has to contain it. When the page is built, that text is read from the organisers' dataset (step 1) and placed in the page, unchanged.
+The page (`index.html`) is built from the JSON alone and contains the same text, since a page can only show what it holds.
 
 ## Reading the table: every column, every blank
 
@@ -90,7 +90,10 @@ The page (`index.html`) is different: to show a claim, it has to contain it. Whe
 |---|---|---|
 | `arxiv_id`, `title` | The paper | |
 | `claim_source` | Where the claim is in the paper, e.g. "Table 2, page 6" | Open that page first |
+| `official_authors` | The paper's authors | Recognise a group whose code you trust; know who to ask |
+| `official_background`, `official_method` | The organisers' plain-language summary of the problem and of what the paper does | The quickest way to decide whether a paper is in your area before opening the PDF |
 | `official_claim` | The result you are asked to reproduce, in the organisers' words | This, not the abstract, is what your verdict is about |
+| `official_claim_caption` | The caption of the claimed table or figure | Confirms you are looking at the right table |
 | `official_metric` | What is measured and how it is reported (seeds, spread) | Tells you what number to produce and what tolerance is fair |
 | `official_comparison` | What the method is compared against | Tells you which baselines you would have to run as well |
 | `official_falsification_criterion` | What result would count as overturning the claim | Read it before choosing: it often reveals the real cost, such as "after retraining" |
@@ -337,10 +340,9 @@ uv sync --group embed      # creates .venv from uv.lock (Python 3.11+); the "emb
 
 ### The cheap path: change something and rebuild the page (about 20 seconds)
 
-The repository ships this project's own data; the organisers' claim text is fetched by step 1. So after cloning:
+The repository ships everything the page builder needs, so this works straight after cloning:
 
 ```bash
-uv run python pipeline/1_fetch_claims.py     # downloads the organisers' claim text, which is not stored in this repository (about 5 seconds)
 uv run python pipeline/4_build_map.py        # rebuilds index.html from data/ (about 1 second)
 ```
 
