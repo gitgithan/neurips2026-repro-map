@@ -26,6 +26,12 @@ th{position:sticky;top:0;background:var(--panel);cursor:pointer;z-index:1}#tb tr
 .bar{display:inline-flex;height:7px;border-radius:3px;overflow:hidden;vertical-align:middle;margin-right:5px;background:#0f141d}.bar i{display:block;height:100%}
 .over{position:absolute;inset:0;background:var(--panel);overflow:auto;padding:10px 14px;display:none;z-index:5}.over h3{margin:0 30px 4px 0;font-size:15px}
 .over h4{margin:9px 0 2px;font-size:12px;color:var(--acc);text-transform:uppercase;letter-spacing:.04em}.over code{color:var(--mut);font-size:11px;word-break:break-all}.kv{margin:1px 0}.over a{word-break:break-all}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(118px,1fr));gap:6px;margin:9px 0 4px}.tile{background:#0f141d;border:1px solid var(--line);border-radius:8px;padding:6px 10px}.tile b{display:block;font-size:15px;line-height:1.25}.tile span{color:var(--mut);font-size:11px}.tile.warn{border-color:#7a2b2b}.tile.warn b{color:var(--bad)}.tile.ok{border-color:#24543d}.tile.ok b{color:var(--good)}
+.issue{border-left:3px solid #ff6b6b;background:#1b1518;padding:6px 10px;margin:5px 0;border-radius:0 7px 7px 0}.issue b{display:block;margin-bottom:1px}.issue div{color:var(--mut)}.issue code{display:block;margin-top:3px}.issue.ok{border-left-color:#3ecf8e;background:#13201a}
+.dl{display:grid;grid-template-columns:125px 1fr;gap:6px 12px;margin:4px 0}.dl dt{color:var(--mut)}.dl dd{margin:0}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:14px;padding:2px 11px;margin:1px 2px;text-decoration:none;background:#0f141d;white-space:nowrap}.pill:hover{border-color:var(--acc)}
+details.sec{border:1px solid var(--line);border-radius:8px;margin:8px 0;padding:0 10px}details.sec[open]{padding-bottom:8px}details.sec>summary{cursor:pointer;font-weight:700;padding:7px 0;color:var(--ink)}.sub{color:var(--acc);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin:8px 0 2px}
+@media (max-width:820px){.dl{grid-template-columns:1fr;gap:1px 0}.dl dt{margin-top:6px}}
 .over li{cursor:pointer;margin:2px 0}.over li:hover{color:var(--acc)}.over ul{margin:4px 0;padding-left:16px}.x{position:absolute;right:10px;top:8px;z-index:6}
 #cmpt th,#cmpt td{border:1px solid var(--line);min-width:170px;max-width:300px;font-size:12px}#cmpt th:first-child,#cmpt td:first-child{min-width:120px;max-width:150px;color:var(--mut);position:sticky;left:0;background:var(--panel)}#cmpt th{position:static;cursor:default}
 #tip{position:absolute;pointer-events:none;background:#000d;padding:3px 7px;border-radius:5px;display:none;max-width:320px;z-index:4}
@@ -210,31 +216,44 @@ function issues(r){const o=[],c=r.cst||{},q=encodeURIComponent('"'+r.t+'"'),find
 const SIMNOTE='sim = cosine similarity of the text embeddings of title + claim. Two random papers here score about 0.68; nearest neighbours 0.80–0.90. It means similar wording and subject, not shared code, data or authors.';
 function closeCard(){S.sel=null;$('#card').style.display='none';render()}
 function select(id,scroll){S.sel=id;const r=D[IDX[id]];V.cx=r.x;V.cy=r.y;if(!scroll)V.k=Math.max(V.k,3);$('#cmp').style.display='none';
- const q=encodeURIComponent('"'+r.t+'"'),other=r.gh.filter(g=>g[0].toLowerCase()!==(r.repo||'').toLowerCase()),am=r.appm||{};
- const repoLine=r.repo?`<div class="kv"><a href="${esc(r.repo)}" target="_blank">${esc(r.repo.replace('https://',''))}</a> <span class="mut">found via ${esc(r.rvia==='pdf'?'the PDF':'the project page')} · confidence ${esc(r.rconf||'?')} · ${r.rs==='cloned'?`read at commit ${r.rsha}, last commit ${r.rdate}`:r.rs==='dead'?'<span class="bad">link returns 404 — renamed, moved or made private?</span>':esc(nice(r.rs))}</span></div>`:'<div class="kv mut">No GitHub link was found in the PDF or on its project page. The code may still exist: check the links below, search by title, or ask the authors on OpenReview.</div>';
- $('#card').style.display='block';$('#card').scrollTop=0;$('#card').innerHTML=`<button class="x" data-close="1">✕ back to list</button><h3>${esc(r.t)}</h3><div class="mut">${esc(r.au.join(', '))}</div>
- <div style="margin:4px 0">${badges(r)}<br>${autos(r)}</div>
- <div class="row"><button data-short="${r.id}" class="${S.short.includes(r.id)?'on':''}">${S.short.includes(r.id)?'✓ on my shortlist':'+ add to my shortlist'}</button><button data-like="${r.id}">${S.likes.includes(r.id)?'★ ranking similar papers higher':'☆ show me more like this'}</button><span class="b">my score ${r.score} (#${r.rank})</span></div>
- <h4>What stands in your way, and a way round it</h4>${(()=>{const I=issues(r);return I.length?I.map(([a,b])=>`<div class="kv"><span class="bad">${a}.</span> ${b}</div>`).join(''):'<div class="kv good">Nothing was flagged. That is not a guarantee: only the checks described in the README were made.</div>'})()}
- <h4>Claim to verify <span class="mut" style="text-transform:none">(claim, metric, comparison and falsification criterion are copied word for word from the organisers' dataset)</span></h4><div><b>${esc(r.src)}:</b> ${esc(r.claim)}</div>
- <div class="kv"><b>Metric:</b> <span class="mut">${esc(r.metric)}</span></div>
- <div class="kv"><b>Compared against:</b> <span class="mut">${esc(r.cmp)||'–'}</span></div>
- <div class="kv"><b>It counts as falsified if:</b> <span class="mut">${esc(r.crit)||'–'}</span></div>
- <div class="kv">${claimLinks(r)} <span class="mut">— shows the organisers' picture of the claimed table or figure</span></div>
- <div class="kv ${r.loc.startsWith('found on the stated page')?'mut':'bad'}">Location check against the arXiv PDF: ${esc(r.loc||'not checked')}${r.loc.startsWith('found on the stated page')||r.loc.startsWith('not checked')?'':' — the arXiv version may differ from the one the organisers used; trust the picture in the official record'}</div>
- <div class="kv">Checkable ${r.ck}/10 <span class="mut">${esc(r.ckw.join(' · '))||'no adjustments'}</span></div>
- <h4>Where to look, who to ask</h4><div class="kv"><a href="https://arxiv.org/abs/${r.id}" target="_blank">arXiv</a> · <a href="https://arxiv.org/pdf/${r.id}" target="_blank">PDF</a>${r.orv?` · <a href="${esc(r.orv)}" target="_blank">OpenReview (reviews; ask the authors)</a>`:''}${r.pwc?` · <a href="${esc(r.pwc)}" target="_blank">Papers with Code</a>`:''} · <a href="https://github.com/search?q=${q}&type=repositories" target="_blank">search GitHub by title</a> · <a href="https://huggingface.co/search/full-text?q=${q}" target="_blank">search Hugging Face</a></div>
- <h4>Code repository</h4>${repoLine}${other.length?`<div class="mut" style="margin-top:3px">Other GitHub links in the PDF:</div>${lnk(other,'')}`:''}
- <h4>Hugging Face links in the PDF (models / datasets / demos)</h4>${lnk(r.hf,'none found')}
- ${r.pp.length||r.anon.length?`<h4>Project pages / anonymous code</h4>${lnk(r.pp.concat(r.anon),'')}`:''}
- <h4>Paper</h4><div class="kv">${r.pages??'?'} pages (${r.mb??'?'} main body) · about ${r.refs??'?'} references · claim on page ${r.cpg??'?'}${r.capp?' <span class="bad">(in the appendix)</span>':''} · ${r.mins!=null?'~'+Math.round(r.mins)+' min to read abstract + method + setup':'read time unknown'}</div>
- <div class="kv">Appendix mentions: hyperparameters ${am.hyperparameter||0}× · prompt templates ${am.prompt_template||0}× · seeds ${am.seeds||0}× <span class="mut">(more mentions usually means the setup is written down)</span></div>
- ${r.hosted?'<div class="kv bad">The text names a hosted model (GPT / Claude / Gemini …). Check whether it is the method under test (you need API access), a judge (an open model may substitute), or only a baseline.</div>':''}
- <div class="kv">Hardware mentioned in the paper: ${r.hw.length?r.hw.map(h=>`<code>…${esc(h)}…</code>`).join('<br>'):'<span class="mut">none found — the paper does not say; that is not the same as cheap</span>'}</div>
- ${r.rs==='cloned'?`<h4>Repository scan — turnkey ${r.tk}/10 <span class="mut" style="text-transform:none">(${r.npy} Python files · dependency files: ${esc(r.deps.join(', ')||'none')} · licence: ${esc(r.lic||'none found')} · tests: ${r.tests?'yes':'none found'})</span></h4>
- <div class="mut">Good signs (+1 each)</div>${ev(r.boost,'good')}<div class="mut">Friction</div>${ev(r.soft,'')}<div class="mut">Blockers (score set to 0)</div>${ev(r.hard,'bad')}
- <div class="mut">Building blocks for award entries (not scored)</div>${ev(r.facts,'sem')}${NK(r.ign)?`<div class="mut">Keyword matches judged harmless and ignored</div>${ev(r.ign,'mut')}`:''}`:''}
- <h4>Most similar papers <span class="mut" style="text-transform:none">(click to jump)</span></h4><div class="mut">${SIMNOTE}</div><ul>${r.nb.map(([n,s])=>{const m=D[IDX[n]];return `<li data-go="${n}">${esc(m.t)} <span class="mut">sim ${s} · my #${m.rank}</span></li>`}).join('')}</ul>`;
+ const q=encodeURIComponent('"'+r.t+'"'),other=r.gh.filter(g=>g[0].toLowerCase()!==(r.repo||'').toLowerCase()),am=r.appm||{},I=issues(r),okLoc=r.loc.startsWith('found on the stated page'),scanned=r.rs==='cloned';
+ const tile=(cls,big,small)=>`<div class="tile ${cls}"><b>${big}</b><span>${small}</span></div>`;
+ const tiles=[
+  scanned?tile(NK(r.hard)?'warn':r.tk>=7?'ok':'',NK(r.hard)?'Blocked':`Turnkey ${r.tk}/10`,'code repository found'):tile('warn',r.rs==='dead'?'Dead link':'No repo found','code repository'),
+  tile(I.length?'warn':'ok',I.length?`${I.length} thing${I.length>1?'s':''}`:'Nothing flagged','in your way'),
+  tile('',`${r.ck}/10`,'claim is checkable'),
+  tile('',r.mins!=null?`~${Math.round(r.mins)} min`:'?',`to read · ${r.pages??'?'} pages`),
+  tile(r.capp?'warn':'',`Page ${r.cpg??'?'}`,r.capp?'claim is in the appendix':'where the claim is'),
+  tile('',`${r.score}`,`my score · #${r.rank}`)].join('');
+ const repoLine=r.repo?`<div class="kv"><a href="${esc(r.repo)}" target="_blank">${esc(r.repo.replace('https://',''))}</a><br><span class="mut">found via ${esc(r.rvia==='pdf'?'the PDF':'the project page')} · confidence ${esc(r.rconf||'?')} · ${scanned?`read at commit ${r.rsha}, last commit ${r.rdate}`:r.rs==='dead'?'<span class="bad">link returns 404</span>':esc(nice(r.rs))}</span></div>`:'<div class="kv mut">None found in the PDF or on its project page.</div>';
+ const nLinks=other.length+r.hf.length+r.pp.length+r.anon.length+(r.repo?1:0);
+ $('#card').style.display='block';$('#card').scrollTop=0;$('#card').innerHTML=`<button class="x" data-close="1">✕ back to list</button>
+ <h3>${esc(r.t)}</h3><div class="mut" style="font-size:12px">${esc(r.au.join(', '))}</div>
+ <div style="margin:6px 0 2px">${badges(r)} ${autos(r)}</div>
+ <div class="row"><button data-short="${r.id}" class="${S.short.includes(r.id)?'on':''}">${S.short.includes(r.id)?'✓ on my shortlist':'+ add to my shortlist'}</button><button data-like="${r.id}" class="${S.likes.includes(r.id)?'on':''}">${S.likes.includes(r.id)?'★ ranking similar papers higher':'☆ show me more like this'}</button>
+  <a class="pill" href="https://arxiv.org/abs/${r.id}" target="_blank">arXiv</a><a class="pill" href="https://arxiv.org/pdf/${r.id}" target="_blank">PDF</a>${r.repo?`<a class="pill" href="${esc(r.repo)}" target="_blank">Code</a>`:''}${r.orv?`<a class="pill" href="${esc(r.orv)}" target="_blank" title="reviews, and where to ask the authors">OpenReview</a>`:''}<a class="pill" href="${esc(r.rec)}" target="_blank" title="this paper's record in the organisers' dataset, with their picture of the claimed table or figure">Official record</a></div>
+ <div class="tiles">${tiles}</div>
+ <h4>In your way${I.length?` (${I.length})`:''}</h4>${I.length?I.map(([t,w])=>`<div class="issue"><b>${t}</b><div>${w}</div></div>`).join(''):'<div class="issue ok"><b>Nothing was flagged</b><div>Not a guarantee: only the checks described in the README were made.</div></div>'}
+ <h4>The claim <span class="mut" style="text-transform:none;letter-spacing:0">— copied word for word from the organisers' dataset</span></h4>
+ <dl class="dl"><dt>Where</dt><dd><b>${esc(r.src)}</b>${okLoc||r.loc.startsWith('not checked')?'':` <span class="bad">— ${esc(r.loc)}; go by the picture in the official record</span>`}</dd>
+  <dt>Claim</dt><dd>${esc(r.claim)}</dd><dt>Metric</dt><dd>${esc(r.metric)||'–'}</dd><dt>Compared against</dt><dd>${esc(r.cmp)||'–'}</dd><dt>Falsified if</dt><dd>${esc(r.crit)||'–'}</dd>
+  <dt>Checkable</dt><dd>${r.ck}/10 <span class="mut">${esc(r.ckw.join(' · '))||'no adjustments'}</span></dd></dl>
+ <details class="sec"${scanned?' open':''}><summary>Code and links found in the paper (${nLinks})</summary>
+  <div class="sub">Code repository</div>${repoLine}
+  ${other.length?`<div class="sub">Other GitHub links in the PDF</div>${lnk(other,'')}`:''}
+  <div class="sub">Hugging Face links (models, datasets, demos)</div>${lnk(r.hf,'none found')}
+  ${r.pp.length||r.anon.length?`<div class="sub">Project pages / anonymous code</div>${lnk(r.pp.concat(r.anon),'')}`:''}
+  <div class="sub">Search elsewhere</div><div class="kv"><a class="pill" href="https://github.com/search?q=${q}&type=repositories" target="_blank">GitHub by title</a><a class="pill" href="https://huggingface.co/search/full-text?q=${q}" target="_blank">Hugging Face by title</a>${r.pwc?`<a class="pill" href="${esc(r.pwc)}" target="_blank">Papers with Code</a>`:''}</div></details>
+ ${scanned?`<details class="sec"><summary>Repository scan — turnkey ${r.tk}/10</summary>
+  <dl class="dl"><dt>Files</dt><dd>${r.npy} Python files · dependency files: ${esc(r.deps.join(', ')||'none')}</dd><dt>Licence</dt><dd>${esc(r.lic||'none found')}</dd><dt>Tests</dt><dd>${r.tests?'yes':'none found'}</dd></dl>
+  <div class="sub">Good signs (+1 each)</div>${ev(r.boost,'good')}<div class="sub">Friction</div>${ev(r.soft,'')}<div class="sub">Blockers (score set to 0)</div>${ev(r.hard,'bad')}
+  <div class="sub">Building blocks for award entries (not scored)</div>${ev(r.facts,'sem')}${NK(r.ign)?`<div class="sub">Keyword matches judged harmless and ignored</div>${ev(r.ign,'mut')}`:''}</details>`:''}
+ <details class="sec"><summary>Paper details</summary>
+  <dl class="dl"><dt>Length</dt><dd>${r.pages??'?'} pages (${r.mb??'?'} main body)${r.refs!=null?` · about ${r.refs} references`:''}</dd>
+  <dt>Reading time</dt><dd>${r.mins!=null?'~'+Math.round(r.mins)+' min for abstract + method + setup':'unknown'}</dd>
+  <dt>Setup in appendix</dt><dd>mentions hyperparameters ${am.hyperparameter||0}×, prompt templates ${am.prompt_template||0}×, seeds ${am.seeds||0}× <span class="mut">(more usually means the setup is written down)</span></dd>
+  <dt>Hardware</dt><dd>${r.hw.length?r.hw.map(h=>`<code>…${esc(h)}…</code>`).join('<br>'):'<span class="mut">not stated in the paper (not the same as cheap)</span>'}</dd></dl></details>
+ <h4>Most similar papers <span class="mut" style="text-transform:none;letter-spacing:0;cursor:help" title="${SIMNOTE}">— click to jump · what is “sim”? ⓘ</span></h4><ul>${r.nb.map(([n,sm])=>{const m=D[IDX[n]];return `<li data-go="${n}">${esc(m.t)} <span class="mut">sim ${sm} · my #${m.rank}</span></li>`}).join('')}</ul>`;
  render();if(scroll){const tr=document.querySelector(`tr[data-id="${id}"]`);tr&&tr.scrollIntoView({block:'center',inline:'nearest'})}}
 // ---- compare (up to 5)
 function cosP(i,j){let s=0;for(let k=0;k<DIM;k++)s+=E[i*DIM+k]*E[j*DIM+k];return s/16129}
