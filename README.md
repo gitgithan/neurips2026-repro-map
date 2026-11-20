@@ -6,7 +6,7 @@ For each of the 1,046 papers it shows what the paper links to, what its reposito
 
 - **Open the map:** https://huggingface.co/spaces/gitgithan/neurips2026-repro-map (works in any browser; no account, no install, nothing is sent anywhere)
 - **Or offline:** download `index.html` from this repository and open it.
-- **Or as data:** `data/papers_evidence.json` and `data/papers_evidence.csv`.
+- **Or as data:** the [evidence dataset on the Hugging Face Hub](https://huggingface.co/datasets/gitgithan/neurips2026-repro-map-evidence) (browse it as a table, or `load_dataset("gitgithan/neurips2026-repro-map-evidence")`). The same files are in this repository as `data/papers_evidence.csv` and `data/papers_evidence.json`.
 
 ## What this is, and what it is not
 
@@ -390,6 +390,23 @@ This is a spare-time project reviewed on a best-effort basis, so small, focused 
 
 ## Sources and licence
 
-- Paper list, labels and claims: the hackathon's official claim list on the Hugging Face Hub. Those fields are reproduced unchanged and remain under that dataset's terms.
-- PDFs: arXiv. Repositories: the authors' public GitHub repositories. Neither is redistributed; only short quoted lines are kept as evidence.
-- Code in this repository: MIT.
+**What this project publishes**
+
+| What | Where | Licence |
+|---|---|---|
+| The interactive map | https://huggingface.co/spaces/gitgithan/neurips2026-repro-map | MIT |
+| The evidence data (CSV + JSON, one row per paper) | https://huggingface.co/datasets/gitgithan/neurips2026-repro-map-evidence | MIT for the columns this project adds; `official_` columns remain under the organisers' terms |
+| Code, rules and this documentation | https://github.com/gitgithan/neurips2026-repro-map | MIT |
+
+The three are published together from one build, so they always describe the same snapshot.
+
+**What it is built from**
+
+| Source | What is taken from it | How |
+|---|---|---|
+| The organisers' claim dataset, https://huggingface.co/datasets/Neurips-2026-MLIntern-Repro/papers (revision `8187c351d8201824c2e606d9fb8e299b4709a98c`) | The list of papers, the four official labels, authors, summaries, and the claim, metric, comparison and falsification criterion | Copied unchanged into the `official_` columns; every row links back to its record there |
+| arXiv, https://arxiv.org/abs/<id> | Each paper's PDF | Read by script for links, page structure, hardware sentences and statements about code. PDFs are not redistributed |
+| The authors' public GitHub repositories | File lists and text files of each repository at one commit (recorded per paper) | Read by script, never executed. Repositories are not redistributed; only short quoted lines are kept as evidence |
+| `BAAI/bge-small-en-v1.5` (text-embedding model) | Nothing from the papers; it is the tool that turns text into vectors | Used for the map layout, topics, areas and search by meaning |
+
+Nothing comes from Papers with Code or OpenReview beyond the links to each paper's page there.

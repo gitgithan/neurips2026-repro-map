@@ -51,7 +51,7 @@ h2{font-size:12px;margin:9px 0 3px;color:var(--acc);text-transform:uppercase;let
 #sl{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1px 14px}#sl label{justify-content:space-between}#sl input{width:100px;padding:0}#sl b{color:var(--ink);width:16px;text-align:right;display:inline-block}
 .sw{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:4px}
 table{border-collapse:collapse;width:100%}th,td{padding:5px 7px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}
-th{position:sticky;top:0;background:var(--panel);cursor:pointer;z-index:1}#tb tr:hover{background:#1b2231}tr.sel{background:#263250}td:nth-child(2){min-width:210px}
+th{position:sticky;top:0;background:var(--panel);cursor:pointer;z-index:1}.hh{border-bottom:1px dotted var(--mut);cursor:help}#tb tr:hover{background:#1b2231}tr.sel{background:#263250}td:nth-child(2){min-width:210px}
 .b{display:inline-block;padding:0 6px;border-radius:9px;font-size:11px;font-weight:700;margin:1px 2px 1px 0;border:1px solid var(--line);white-space:nowrap}
 .oral{background:#ffb000;color:#111;border-color:#ffb000}.spotlight{background:#6ea8fe;color:#111;border-color:#6ea8fe}.poster{color:var(--mut)}
 .harder{background:#4a1d1d;color:#ff9c9c;border-color:#7a2b2b}.standard{background:#173326;color:#7ee2b0;border-color:#24543d}.trk{color:#c9b6ff;border-color:#4b3f7a}
@@ -68,6 +68,7 @@ details.sec{border:1px solid var(--line);border-radius:8px;margin:8px 0;padding:
 @media (max-width:820px){.dl{grid-template-columns:1fr;gap:1px 0}.dl dt{margin-top:6px}}
 .over li{cursor:pointer;margin:2px 0}.over li:hover{color:var(--acc)}.over ul{margin:4px 0;padding-left:16px}.x{position:absolute;right:10px;top:8px;z-index:6}
 #cmpt th,#cmpt td{border:1px solid var(--line);min-width:170px;max-width:300px;font-size:12px}#cmpt th:first-child,#cmpt td:first-child{min-width:120px;max-width:150px;color:var(--mut);position:sticky;left:0;background:var(--panel)}#cmpt th{position:static;cursor:default}
+#foot{flex:0 0 auto;padding:4px 12px;border-top:1px solid var(--line);background:var(--panel);font-size:11.5px;color:var(--mut)}#foot b{color:var(--ink)}
 #tip{position:absolute;pointer-events:none;background:#000d;padding:3px 7px;border-radius:5px;display:none;max-width:320px;z-index:4}
 #hint{position:absolute;left:10px;bottom:6px;color:var(--mut);font-size:11px;pointer-events:none}
 #legend{position:absolute;right:8px;top:8px;background:rgba(22,27,38,.9);border:1px solid var(--line);border-radius:8px;padding:6px 9px;font-size:11px;max-height:70%;overflow:auto}
@@ -115,6 +116,12 @@ a{color:var(--blue)}details.fold{margin-top:5px}details.fold>summary{cursor:poin
 </div><div id="hs" title="drag to resize"></div>
 <div id="tablewrap"><div id="ordnote"></div><div id="tw"><table><thead><tr id="hd"></tr></thead><tbody id="tb"></tbody></table></div>
 <div class="over" id="card"></div><div class="over" id="cmp"></div></div></div></div>
+<footer id="foot"><b>Data and sources</b> ·
+ <a href="https://huggingface.co/datasets/gitgithan/neurips2026-repro-map-evidence" target="_blank" title="everything shown on this page as one table: CSV and JSON, one row per paper">This page's data (CSV / JSON)</a> ·
+ <a href="https://github.com/gitgithan/neurips2026-repro-map" target="_blank" title="the scripts that produced the data, every rule explained, and how to rebuild it">Code and method</a> ·
+ Built from: <a href="https://huggingface.co/datasets/Neurips-2026-MLIntern-Repro/papers" target="_blank" title="papers, labels, claims, metrics and falsification criteria; copied unchanged at revision __REV__">the organisers' claim dataset</a>,
+ each paper's <a href="https://arxiv.org/" target="_blank">arXiv</a> PDF and the authors' public GitHub repositories ·
+ <span class="mut">No code was run to produce these scores · snapshot of __DATE__</span></footer>
 <script>
 const D=__DATA__, VOC=__VOC__, DIM=__DIM__;
 const dec=s=>new Int8Array(Uint8Array.from(atob(s),c=>c.charCodeAt(0)).buffer), E=dec("__ES__"), TV=dec("__TV__");
@@ -178,14 +185,25 @@ const claimLinks=r=>`<a href="${esc(r.rec)}" target="_blank" title="this paper's
 const repo=r=>r.repo?`<a href="${esc(r.repo)}" target="_blank">repo</a>`:`<span class="mut">no repo found</span>`;
 const tkc=r=>r.rs!=='cloned'?`<span class="mut">– (${r.rs==='dead'?'repo link dead':'no repo found'})</span>`:NK(r.hard)?`<span class="bad">0 — ${esc(Object.keys(r.hard).map(nice).join(', '))}</span>`:`${r.tk}`;
 const bar=r=>`<span class="bar" style="width:${Math.max(4,Math.round(r.score*.6))}px" title="${W.map((w,k)=>w[1]+': '+r.parts[k].toFixed(1)).join('\n')}">${r.parts.map((p,k)=>p>0?`<i style="width:${p/Math.max(r.score,.1)*100}%;background:${W[k][2]}"></i>`:'').join('')}</span>`;
-const COLS=[['rank','#',''],['t','Paper',''],['labels','Labels (hover for source)','hidem'],['mins','Read','hidem'],['tk','Turnkey',''],['ck','Checkable','hidem'],['match','Match',''],['score','My score',''],['pin','','']];
+const COLS=[
+ ['rank','#','','Position in the current order. With interests typed and “matching first” on: matches first, then my score. Otherwise: my score.'],
+ ['t','Paper','','Title, arXiv id, code repository if one was found, and the organisers’ official record. Green words are your interests found in the paper; blue “≈” words are related by meaning.'],
+ ['labels','Labels','hidem','NEURIPS: oral / spotlight / poster and track, decided by the conference. HACKATHON: difficulty and table-or-figure claim, set by the hackathon organisers. AUTO (dashed): topics and areas computed by this tool from the text; a paper can have several.'],
+ ['mins','Read','hidem','Estimated minutes to read the abstract, method and experimental setup: word count ÷ 200 per minute, up to 50% longer for equation-heavy papers. Click to sort, shortest first.'],
+ ['tk','Turnkey','','How runnable the code repository LOOKS, 0–10, from reading its files (nothing was run). Starts at 3; +1 per good sign such as data or weights that download themselves, a lock file, a Dockerfile, an eval or reproduce script; −1 or −2 per friction such as manual downloads, a C++/CUDA build or gated data. 0 = a blocker. “–” = no repository found.'],
+ ['ck','Checkable','hidem','How cleanly you can tell whether you matched the claim, 0–10. Starts at 4; +2 if the claim is a table of exact numbers; +2 if a spread or number of runs is reported; +1 if the claim states numbers; −2 if it averages over 5 or more benchmarks; −1 if the result is in the appendix.'],
+ ['match','Match','','How well the paper fits the interests you typed or the papers you starred. 100% = your word is in the title; 70% = it is in the claim, method or background; up to 60% = related by meaning (approximate). “–” = you have not typed any interest.'],
+ ['score','My score','','One number, 0–100, combining the things YOU gave weight to: runnable repo, checkable claim, quick to read, oral/spotlight, not “harder than most”, and match with your interests. It is a weighted average, so 100 would mean perfect on everything you care about. The coloured bar shows how much each part contributed (hover it for the numbers). Change the weights under “Change how my score is weighted”. It is not a prediction that the paper will reproduce.'],
+ ['pin','','','☆ = show me more like this (papers with similar text rank higher). + = add to my shortlist (up to 5) to compare side by side.']];
 let VIS=D.map(()=>true);
 function render(){score();const rows=D.filter(r=>pass(r)).sort((a,b)=>{if(S.sort==='score'||S.sort==='rank'){const c=byScore(a,b);return S.sort==='rank'?c*S.dir:-c*S.dir}const x=a[S.sort],y=b[S.sort];if(x==null)return 1;if(y==null)return -1;return (x>y?1:x<y?-1:0)*S.dir});
  $('#cnt').textContent=rows.length+' of '+D.length+' papers shown';
  const byMatch=S.mf&&(S.sort==='score'||S.sort==='rank'),arrowOn=byMatch?'match':S.sort;
- $('#ordnote').style.display=byMatch?'block':'none';
+ const hasM=D.some(r=>r.match>0),byScoreOnly=hasM&&!S.mf&&S.sort==='score';
+ $('#ordnote').style.display=byMatch||byScoreOnly?'block':'none';
+ if(byScoreOnly)$('#ordnote').innerHTML='<b>Ordered by my score only.</b> Papers matching your interests are mixed in with the rest. <button id="ordMatch">List matching papers first</button>';
  if(byMatch)$('#ordnote').innerHTML='<b>Ordered by match with your interests first</b> (exact matches, then related ones by closeness), then by my score — so the “My score” column is not in order here. <button id="ordScore">Order by my score only</button>';
- $('#hd').innerHTML=COLS.map(([k,l,c])=>`<th data-k="${k}" class="${c}">${l}${arrowOn===k?(byMatch||S.dir<0?' ▼':' ▲'):''}</th>`).join('');
+ $('#hd').innerHTML=COLS.map(([k,l,c,tip])=>`<th data-k="${k}" class="${c}" title="${esc(tip)}">${l?`<span class="hh" data-k="${k}">${l}</span>`:''}${arrowOn===k?(byMatch||S.dir<0?' ▼':' ▲'):''}</th>`).join('');
  $('#tb').innerHTML=rows.slice(0,300).map(r=>`<tr data-id="${r.id}" class="${S.sel===r.id?'sel':''}"><td>${r.rank}</td><td><b>${esc(r.t)}</b><br><a href="https://arxiv.org/abs/${r.id}" target="_blank">${r.id}</a> · ${repo(r)} · ${claimLinks(r)}${r.kwhit.length?` <span class="good" title="your word appears in this paper">${esc(r.kwhit.join(', '))}</span>`:''}${r.semhit.length?` <span class="sem" title="related by meaning (approximate)">≈ ${esc(r.semhit.join(', '))}</span>`:''}</td><td class="hidem">${badges(r)}<br>${autos(r)}</td><td class="hidem">${r.mins!=null?'~'+Math.round(r.mins)+' min':'–'}</td><td>${tkc(r)}</td><td class="hidem">${r.ck??'–'}</td><td>${r.match==null?'<span class="mut">–</span>':Math.round(r.match*100)+'%'}</td><td>${bar(r)}<b>${r.score}</b></td><td style="white-space:nowrap"><button data-like="${r.id}" title="more like this: rank similar papers higher">${S.likes.includes(r.id)?'★':'☆'}</button> <button data-short="${r.id}" class="${S.short.includes(r.id)?'on':''}" title="add to my shortlist (max 5)">${S.short.includes(r.id)?'✓':'+'}</button></td></tr>`).join('')+(rows.length>300?`<tr><td colspan="9" class="mut">showing the first 300 of ${rows.length}; narrow with interests, the switches above, or search</td></tr>`:'');
  $('#short').innerHTML=S.short.length?S.short.map((id,i)=>`<span class="chip" data-open="${id}" title="${esc(D[IDX[id]].t)}">${i+1}. ${esc(D[IDX[id]].t.slice(0,22))}… <i data-rm="${id}">✕</i></span>`).join(''):'<span class="mut">press + on up to 5 papers, then compare them</span>';
  $('#bOnly').classList.toggle('on',S.only);W.forEach(([k],i)=>{$('#w_'+k).value=S.w[i];$('#v_'+k).textContent=S.w[i]});
@@ -321,8 +339,8 @@ document.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>{S.w=PRE[b.data
 ['fTop','fTrk'].forEach(i=>$('#'+i).onchange=render);$('#q').oninput=render;$('#mfirst').onchange=render;$('#c_match').onchange=render;
 let tmr;$('#int').oninput=()=>{typing();clearTimeout(tmr);tmr=setTimeout(render,160)};$('#int').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();render();$('#tw').scrollTop=0}};
 $('#fCol').onchange=()=>{S.sem=null;render()};$('#bLinks').onclick=()=>{S.links=!S.links;$('#bLinks').classList.toggle('on');draw()};
-$('#ordnote').onclick=e=>{if(e.target.id==='ordScore'){$('#mfirst').checked=false;S.sort='score';S.dir=-1;render()}};
-$('#hd').onclick=e=>{const k=e.target.dataset.k;if(!k||k==='pin'||k==='labels')return;if(k==='score'&&S.mf){$('#mfirst').checked=false;S.sort='score';S.dir=-1;render();return}S.dir=S.sort===k?-S.dir:(k==='rank'||k==='t'||k==='mins'?1:-1);S.sort=k;render()};
+$('#ordnote').onclick=e=>{if(e.target.id==='ordScore'){$('#mfirst').checked=false;S.sort='score';S.dir=-1;render()}if(e.target.id==='ordMatch'){$('#mfirst').checked=true;S.sort='score';S.dir=-1;render();$('#tw').scrollTop=0}};
+$('#hd').onclick=e=>{const k=(e.target.closest('[data-k]')||{dataset:{}}).dataset.k;if(!k||k==='pin'||k==='labels')return;if(k==='score'&&S.mf){$('#mfirst').checked=false;S.sort='score';S.dir=-1;render();return}S.dir=S.sort===k?-S.dir:(k==='rank'||k==='t'||k==='mins'?1:-1);S.sort=k;render()};
 function toggleShort(id){if(S.short.includes(id))S.short=S.short.filter(x=>x!==id);else if(S.short.length<5)S.short.push(id);else{say('shortlist is full (5) — remove one first');return}if(!S.short.length)S.only=false}
 function toggleLike(id){S.likes.includes(id)?S.likes=S.likes.filter(x=>x!==id):S.likes.length<12&&S.likes.push(id)}
 document.addEventListener('click',e=>{const t=e.target,d=t.dataset||{};
@@ -336,7 +354,7 @@ document.addEventListener('click',e=>{const t=e.target,d=t.dataset||{};
 const say=t=>{$('#msg').textContent=t;const o=$('#mstat').innerHTML;$('#mstat').innerHTML='<span class="bad">'+esc(t)+'</span>';setTimeout(()=>{$('#msg').textContent='';render()},2200)};
 $('#bCmp').onclick=compare;$('#bOnly').onclick=()=>{if(!S.short.length){say('shortlist is empty');return}S.only=!S.only;render()};
 $('#share').onclick=()=>{save();(navigator.clipboard?navigator.clipboard.writeText(location.href):Promise.reject()).then(()=>say('link copied'),()=>say('copy the address bar'))};
-$('#reset').onclick=()=>{S.w=PRE.bal.slice();S.likes=[];S.short=[];S.cons={};S.only=false;$('#int').value='';$('#q').value='';$('#c_match').checked=false;$('#fTop').value='';$('#fTrk').value='';$('#sugg').innerHTML='';render()};
+$('#reset').onclick=()=>{S.w=PRE.bal.slice();S.likes=[];S.short=[];S.cons={};S.only=false;$('#int').value='';$('#q').value='';$('#c_match').checked=false;$('#mfirst').checked=true;S.sort='score';S.dir=-1;$('#fTop').value='';$('#fTrk').value='';$('#sugg').innerHTML='';render()};
 $('#csv').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',rows=D.filter(r=>pass(r)).sort((a,b)=>a.rank-b.rank);const t=['my_rank,my_score,arxiv_id,title,presentation,track,difficulty,auto_topics,turnkey,checkability,read_mins,interest_match,on_shortlist,repo'].concat(rows.map(r=>[r.rank,r.score,r.id,q(r.t),r.pres,r.trk,r.diff,q(r.tops.join('; ')),r.tk,r.ck,r.mins,r.match==null?'':r.match.toFixed(2),S.short.includes(r.id),r.repo||''].join(','))).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='neurips2026_my_ranking.csv';a.click()};
 if(window.innerWidth<=820)$('#legend').classList.add('min');
 load();render();
@@ -344,6 +362,6 @@ load();render();
 OUT = ROOT / "index.html"
 html = (HTML.replace("__DATA__", json.dumps(data, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/"))
             .replace("__VOC__", json.dumps(VOC, separators=(",", ":"), ensure_ascii=False).replace("</", "<\\/"))
-            .replace("__ES__", b64(ES)).replace("__TV__", b64(TV)).replace("__DIM__", str(ES.shape[1])))
+            .replace("__REV__", (recs[0]["official"].get("dataset_revision") or "")[:8]).replace("__DATE__", __import__("time").strftime("%-d %B %Y", __import__("time").gmtime())).replace("__ES__", b64(ES)).replace("__TV__", b64(TV)).replace("__DIM__", str(ES.shape[1])))
 OUT.write_text(html)
 print(f"wrote {OUT.name}: {len(data)} papers, {len(VOC)} search terms, {OUT.stat().st_size/1e6:.2f} MB")
