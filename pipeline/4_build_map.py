@@ -43,7 +43,7 @@ button{cursor:pointer}button.on{background:var(--acc);color:#111;border-color:va
 #main{flex:1;display:flex;min-height:0}#left{flex:0 0 42%;display:flex;flex-direction:column;min-width:160px}#mapwrap{flex:1;position:relative;min-height:0}#gl{width:100%;height:100%;display:block;cursor:grab;touch-action:none}
 #vs{flex:0 0 7px;cursor:col-resize;background:var(--line)}#hs{flex:0 0 7px;cursor:row-resize;background:var(--line)}#vs:hover,#hs:hover,.dragging{background:var(--acc)!important}
 #right{flex:1;display:flex;flex-direction:column;min-width:260px}#prefs{flex:0 0 auto;max-height:55%;overflow:auto;padding:8px 10px;background:var(--panel)}
-#tablewrap{flex:1;position:relative;min-height:80px;display:flex;flex-direction:column}#tw{flex:1;overflow:auto}
+#tablewrap{flex:1;position:relative;min-height:80px;display:flex;flex-direction:column}#ordnote{padding:5px 10px;background:#1d2433;border-bottom:1px solid var(--line);display:none}#ordnote button{margin-left:8px;padding:1px 8px}#tw{flex:1;overflow:auto}
 .steps{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px}.steps span{background:#0f141d;border:1px solid var(--line);border-radius:14px;padding:2px 10px;color:var(--mut)}.steps b{color:var(--acc)}
 h2{font-size:12px;margin:9px 0 3px;color:var(--acc);text-transform:uppercase;letter-spacing:.04em}h2 small{color:var(--mut);text-transform:none;letter-spacing:0;font-weight:400}
 #int{width:100%;height:44px;resize:vertical;font-size:15px;padding:9px 11px;border:2px solid var(--acc);border-radius:8px;background:#0a0e15}#int:focus,#q:focus{outline:none;box-shadow:0 0 0 3px rgba(255,176,0,.3)}#int::placeholder,#q::placeholder{color:#7f8aa3}.biglab{display:block;font-weight:700;color:var(--ink);font-size:14px;margin-bottom:4px}.biglab .mut{font-weight:400;font-size:12px}#q{border:1px solid #55617a;background:#0a0e15;padding:6px 9px;min-width:230px}.row{display:flex;gap:6px 10px;flex-wrap:wrap;align-items:center;margin-top:4px}
@@ -113,7 +113,7 @@ a{color:var(--blue)}details.fold{margin-top:5px}details.fold>summary{cursor:poin
 <p><b>Match</b>: an <span class="good">exact</span> match means your word appears (at the start of a word) in the title (100%) or in the claim, method or background (70%). A <span class="sem">related</span> match (up to 60%) means the paper's text is unusually close in meaning to your word, judged by a text-embedding model; it is approximate and can be wrong.</p>
 <p><b>Similarity</b> (the "sim" numbers and the lines on the map) is the cosine similarity between text embeddings of two papers' title + claim. In this collection two random papers score about 0.68 and a paper's nearest neighbours 0.80–0.90. High similarity means similar wording and subject. It does not mean shared code, data or authors.</p></details>
 </div><div id="hs" title="drag to resize"></div>
-<div id="tablewrap"><div id="tw"><table><thead><tr id="hd"></tr></thead><tbody id="tb"></tbody></table></div>
+<div id="tablewrap"><div id="ordnote"></div><div id="tw"><table><thead><tr id="hd"></tr></thead><tbody id="tb"></tbody></table></div>
 <div class="over" id="card"></div><div class="over" id="cmp"></div></div></div></div>
 <script>
 const D=__DATA__, VOC=__VOC__, DIM=__DIM__;
@@ -182,7 +182,10 @@ const COLS=[['rank','#',''],['t','Paper',''],['labels','Labels (hover for source
 let VIS=D.map(()=>true);
 function render(){score();const rows=D.filter(r=>pass(r)).sort((a,b)=>{if(S.sort==='score'||S.sort==='rank'){const c=byScore(a,b);return S.sort==='rank'?c*S.dir:-c*S.dir}const x=a[S.sort],y=b[S.sort];if(x==null)return 1;if(y==null)return -1;return (x>y?1:x<y?-1:0)*S.dir});
  $('#cnt').textContent=rows.length+' of '+D.length+' papers shown';
- $('#hd').innerHTML=COLS.map(([k,l,c])=>`<th data-k="${k}" class="${c}">${l}${S.sort===k?(S.dir<0?' ▼':' ▲'):''}</th>`).join('');
+ const byMatch=S.mf&&(S.sort==='score'||S.sort==='rank'),arrowOn=byMatch?'match':S.sort;
+ $('#ordnote').style.display=byMatch?'block':'none';
+ if(byMatch)$('#ordnote').innerHTML='<b>Ordered by match with your interests first</b> (exact matches, then related ones by closeness), then by my score — so the “My score” column is not in order here. <button id="ordScore">Order by my score only</button>';
+ $('#hd').innerHTML=COLS.map(([k,l,c])=>`<th data-k="${k}" class="${c}">${l}${arrowOn===k?(byMatch||S.dir<0?' ▼':' ▲'):''}</th>`).join('');
  $('#tb').innerHTML=rows.slice(0,300).map(r=>`<tr data-id="${r.id}" class="${S.sel===r.id?'sel':''}"><td>${r.rank}</td><td><b>${esc(r.t)}</b><br><a href="https://arxiv.org/abs/${r.id}" target="_blank">${r.id}</a> · ${repo(r)} · ${claimLinks(r)}${r.kwhit.length?` <span class="good" title="your word appears in this paper">${esc(r.kwhit.join(', '))}</span>`:''}${r.semhit.length?` <span class="sem" title="related by meaning (approximate)">≈ ${esc(r.semhit.join(', '))}</span>`:''}</td><td class="hidem">${badges(r)}<br>${autos(r)}</td><td class="hidem">${r.mins!=null?'~'+Math.round(r.mins)+' min':'–'}</td><td>${tkc(r)}</td><td class="hidem">${r.ck??'–'}</td><td>${r.match==null?'<span class="mut">–</span>':Math.round(r.match*100)+'%'}</td><td>${bar(r)}<b>${r.score}</b></td><td style="white-space:nowrap"><button data-like="${r.id}" title="more like this: rank similar papers higher">${S.likes.includes(r.id)?'★':'☆'}</button> <button data-short="${r.id}" class="${S.short.includes(r.id)?'on':''}" title="add to my shortlist (max 5)">${S.short.includes(r.id)?'✓':'+'}</button></td></tr>`).join('')+(rows.length>300?`<tr><td colspan="9" class="mut">showing the first 300 of ${rows.length}; narrow with interests, the switches above, or search</td></tr>`:'');
  $('#short').innerHTML=S.short.length?S.short.map((id,i)=>`<span class="chip" data-open="${id}" title="${esc(D[IDX[id]].t)}">${i+1}. ${esc(D[IDX[id]].t.slice(0,22))}… <i data-rm="${id}">✕</i></span>`).join(''):'<span class="mut">press + on up to 5 papers, then compare them</span>';
  $('#bOnly').classList.toggle('on',S.only);W.forEach(([k],i)=>{$('#w_'+k).value=S.w[i];$('#v_'+k).textContent=S.w[i]});
@@ -318,7 +321,8 @@ document.querySelectorAll('[data-pre]').forEach(b=>b.onclick=()=>{S.w=PRE[b.data
 ['fTop','fTrk'].forEach(i=>$('#'+i).onchange=render);$('#q').oninput=render;$('#mfirst').onchange=render;$('#c_match').onchange=render;
 let tmr;$('#int').oninput=()=>{typing();clearTimeout(tmr);tmr=setTimeout(render,160)};$('#int').onkeydown=e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();render();$('#tw').scrollTop=0}};
 $('#fCol').onchange=()=>{S.sem=null;render()};$('#bLinks').onclick=()=>{S.links=!S.links;$('#bLinks').classList.toggle('on');draw()};
-$('#hd').onclick=e=>{const k=e.target.dataset.k;if(!k||k==='pin'||k==='labels')return;S.dir=S.sort===k?-S.dir:(k==='rank'||k==='t'||k==='mins'?1:-1);S.sort=k;render()};
+$('#ordnote').onclick=e=>{if(e.target.id==='ordScore'){$('#mfirst').checked=false;S.sort='score';S.dir=-1;render()}};
+$('#hd').onclick=e=>{const k=e.target.dataset.k;if(!k||k==='pin'||k==='labels')return;if(k==='score'&&S.mf){$('#mfirst').checked=false;S.sort='score';S.dir=-1;render();return}S.dir=S.sort===k?-S.dir:(k==='rank'||k==='t'||k==='mins'?1:-1);S.sort=k;render()};
 function toggleShort(id){if(S.short.includes(id))S.short=S.short.filter(x=>x!==id);else if(S.short.length<5)S.short.push(id);else{say('shortlist is full (5) — remove one first');return}if(!S.short.length)S.only=false}
 function toggleLike(id){S.likes.includes(id)?S.likes=S.likes.filter(x=>x!==id):S.likes.length<12&&S.likes.push(id)}
 document.addEventListener('click',e=>{const t=e.target,d=t.dataset||{};
