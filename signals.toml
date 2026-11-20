@@ -1,0 +1,129 @@
+# Every pattern and weight used to judge "how runnable does this repository look?".
+# Edit this file, then re-run:  uv run python pipeline/2_scan_pdfs_and_repos.py scan --force
+#                               uv run python pipeline/2_scan_pdfs_and_repos.py merge
+#                               uv run python pipeline/3_build_evidence.py && uv run python pipeline/4_build_map.py
+# Patterns are Python regular expressions, matched case-insensitively.
+# scope: "readme" = README / *.md / *.rst files only, "code" = .py .sh .toml .yaml Dockerfile etc., "any" = both.
+
+[weights]
+base = 3                               # every repository with code starts here; each good sign adds 1
+partial_release_pending = 1            # README says part of the release (weights, training code, data) is still to come
+gated_access = 2                       # top-level docs say you must request access / sign an agreement
+google_drive_download = 1              # data or weights sit behind a Google Drive link
+baidu_pan_only = 2                     # ... behind Baidu Pan with no alternative
+baidu_pan_with_drive_alternative = 1
+native_build_top_level = 2             # C++/CUDA extension the repo itself builds
+native_build_nested = 1                # ... only inside a nested (often vendored) folder
+vm_mentioned = 1                       # qemu / kvm mentioned somewhere other than the main README
+
+# ---- good signs: +1 each ------------------------------------------------------------------------------------------
+[[good_sign]]
+name = "load_dataset("                 # data is pulled from the Hugging Face Hub in code
+pattern = '(?<!def )(?<!self\.)(?<!_)load_dataset\('
+scope = "any"
+[[good_sign]]
+name = "from_pretrained("              # weights are pulled from a hub in code
+pattern = 'from_pretrained\('
+scope = "any"
+[[good_sign]]
+name = "huggingface.co/"
+pattern = 'huggingface\.co/'
+scope = "any"
+# File-name good signs (uv.lock, Dockerfile, an eval script, a reproduce script) are checked in code: see file_boost in step 2.
+
+# ---- friction: -1 each --------------------------------------------------------------------------------------------
+[[friction]]
+name = "yt-dlp"                        # data must be scraped from video sites
+pattern = 'yt[-_]dlp|youtube[-_]dl'
+scope = "any"
+[[friction]]
+name = "youtube.com"
+pattern = 'youtube\.com|youtu\.be'
+scope = "any"
+[[friction]]
+name = "ffmpeg"
+pattern = 'ffmpeg'
+scope = "any"
+
+# ---- facts: recorded and shown, never scored -----------------------------------------------------------------------
+[[fact]]
+name = "demo_code"                     # the repository contains an interactive demo
+pattern = '^\s*(import|from)\s+(gradio|streamlit)\b'
+scope = "code"
+[[fact]]
+name = "environment_code"              # the repository defines or uses a Gym-style environment
+pattern = '^\s*(import|from)\s+(gym|gymnasium)\b|\(gym(nasium)?\.Env\)'
+scope = "code"
+[[fact]]
+name = "notebook_or_colab"
+pattern = 'colab\.research\.google\.com'
+scope = "any"
+
+# ---- keywords that are looked up and then classified in code (blocker / weighted friction / ignored) ----------------
+# A keyword match alone never zeroes a score. See "How a keyword becomes a blocker" in the README.
+[[keyword]]
+name = "drive.google.com"
+pattern = 'drive\.google\.com'
+scope = "any"
+[[keyword]]
+name = "pan.baidu.com"
+pattern = 'pan\.baidu\.com'
+scope = "any"
+[[keyword]]
+name = "CUDAExtension"
+pattern = 'CUDAExtension'
+scope = "code"
+[[keyword]]
+name = "cpp_extension"
+pattern = 'cpp_extension'
+scope = "code"
+[[keyword]]
+name = "coming soon"
+pattern = 'coming\s+soon'
+scope = "readme"
+[[keyword]]
+name = "todo:"
+pattern = '\btodo\s*:'
+scope = "readme"
+[[keyword]]
+name = "request access"
+pattern = 'request(ing)?\s+access'
+scope = "readme"
+[[keyword]]
+name = "fill out the form"
+pattern = 'fill\s+(out|in)\s+(the|this|a)\s+form'
+scope = "readme"
+[[keyword]]
+name = "sign the agreement"
+pattern = 'sign\s+(the|an?|this)\s+(license\s+|data\s+use\s+)?agreement'
+scope = "readme"
+[[keyword]]
+name = "/dev/kvm"
+pattern = '/dev/kvm'
+scope = "any"
+[[keyword]]
+name = "qemu"
+pattern = '\bqemu'
+scope = "any"
+
+# ---- claim checkability (step 3) ------------------------------------------------------------------------------------
+[checkability]
+base = 4
+table_claim = 2                        # the claim is a table: exact numbers to compare against
+reports_spread = 2                     # the metric text gives a spread or a number of runs: you know the tolerance
+numbers_in_claim = 1                   # the claim sentence itself states numbers
+many_benchmarks = -2                   # the claim aggregates over 5 or more benchmarks / tasks
+claim_in_appendix = -1
+
+# ---- closed-API hint (step 1): papers whose text names a hosted model --------------------------------------------
+[closed_api]
+pattern = '\b(gpt-4|gpt-5|gpt-4o|claude|gemini|o1|o3|openai api|closed-source|proprietary)\b'
+
+# ---- map (step 3) -----------------------------------------------------------------------------------------------------
+[map]
+embedding_model = "BAAI/bge-small-en-v1.5"
+neighbours = 4
+topics = 14
+umap_neighbors = 20
+umap_min_dist = 0.35
+seed = 42

@@ -1,0 +1,10 @@
+.venv/
+__pycache__/
+logs/
+data/pdfs/
+data/repos/
+data/audit/
+data/claims.json
+data/audit_results.json
+*.tmp
+.env

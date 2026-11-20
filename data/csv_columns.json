@@ -1,0 +1,158 @@
+[
+ {
+  "csv_column": "arxiv_id",
+  "json_path": "arxiv_id"
+ },
+ {
+  "csv_column": "title",
+  "json_path": "title"
+ },
+ {
+  "csv_column": "presentation",
+  "json_path": "labels.presentation"
+ },
+ {
+  "csv_column": "track",
+  "json_path": "labels.track"
+ },
+ {
+  "csv_column": "difficulty",
+  "json_path": "labels.difficulty"
+ },
+ {
+  "csv_column": "claim_kind",
+  "json_path": "labels.claim_kind"
+ },
+ {
+  "csv_column": "claim_source",
+  "json_path": "claim_source"
+ },
+ {
+  "csv_column": "repo_url",
+  "json_path": "links.repo.url"
+ },
+ {
+  "csv_column": "repo_status",
+  "json_path": "links.repo.status (no_link_found when links.repo is null)"
+ },
+ {
+  "csv_column": "repo_last_commit",
+  "json_path": "links.repo.head_date (date part)"
+ },
+ {
+  "csv_column": "turnkey",
+  "json_path": "scores.turnkey"
+ },
+ {
+  "csv_column": "turnkey_basis",
+  "json_path": "scores.turnkey_basis"
+ },
+ {
+  "csv_column": "blockers",
+  "json_path": "repo_scan.blockers (names)"
+ },
+ {
+  "csv_column": "friction",
+  "json_path": "repo_scan.friction (names)"
+ },
+ {
+  "csv_column": "good_signs",
+  "json_path": "repo_scan.good_signs (names)"
+ },
+ {
+  "csv_column": "licence",
+  "json_path": "repo_scan.licence"
+ },
+ {
+  "csv_column": "has_tests",
+  "json_path": "repo_scan.has_tests"
+ },
+ {
+  "csv_column": "demo_code",
+  "json_path": "repo_scan.facts has demo_code"
+ },
+ {
+  "csv_column": "environment_code",
+  "json_path": "repo_scan.facts has environment_code"
+ },
+ {
+  "csv_column": "checkability",
+  "json_path": "scores.checkability"
+ },
+ {
+  "csv_column": "checkability_why",
+  "json_path": "scores.checkability_why (joined)"
+ },
+ {
+  "csv_column": "readability",
+  "json_path": "scores.readability"
+ },
+ {
+  "csv_column": "read_mins",
+  "json_path": "paper.read_mins"
+ },
+ {
+  "csv_column": "pages",
+  "json_path": "paper.pages"
+ },
+ {
+  "csv_column": "reference_count",
+  "json_path": "paper.reference_count"
+ },
+ {
+  "csv_column": "claim_page",
+  "json_path": "paper.claim_page"
+ },
+ {
+  "csv_column": "claim_in_appendix",
+  "json_path": "paper.claim_in_appendix"
+ },
+ {
+  "csv_column": "claim_location_check",
+  "json_path": "paper.claim_location_check"
+ },
+ {
+  "csv_column": "names_hosted_model",
+  "json_path": "paper.names_hosted_model"
+ },
+ {
+  "csv_column": "hardware_mentions",
+  "json_path": "paper.hardware_mentions (count)"
+ },
+ {
+  "csv_column": "code_statements",
+  "json_path": "paper.code_statements (kinds)"
+ },
+ {
+  "csv_column": "other_github_links_in_pdf",
+  "json_path": "links.github_in_pdf (count, excluding links.repo.url)"
+ },
+ {
+  "csv_column": "huggingface_links_in_pdf",
+  "json_path": "links.huggingface_in_pdf (count)"
+ },
+ {
+  "csv_column": "project_page",
+  "json_path": "links.project_pages[0].url"
+ },
+ {
+  "csv_column": "auto_topics",
+  "json_path": "auto_labels.topics (joined)"
+ },
+ {
+  "csv_column": "auto_areas",
+  "json_path": "auto_labels.areas (joined)"
+ },
+ {
+  "csv_column": "official_claim_record",
+  "json_path": "links.official_claim_record"
+ },
+ {
+  "csv_column": "arxiv",
+  "json_path": "links.arxiv"
+ },
+ {
+  "csv_column": "openreview",
+  "json_path": "links.openreview"
+ }
+]
