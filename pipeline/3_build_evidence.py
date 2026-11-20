@@ -60,7 +60,10 @@ for r in claims:
     recs.append({
         "arxiv_id": aid, "title": r["title"],
         "labels": {"presentation": r["presentation"], "track": r["track"], "difficulty": r["difficulty"], "claim_kind": r["image_kind"]},
-        "claim_source": r.get("claim_source"),     # where the organisers say the claim is, e.g. "Table 2, page 6"; the claim text itself is NOT copied here
+        "claim_source": r.get("claim_source"),     # where the organisers say the claim is, e.g. "Table 2, page 6"
+        # copied unchanged from the organisers' dataset so that a row can be read on its own; that dataset is the authority
+        "official": {"claim": r.get("claim"), "metric": r.get("metric"), "comparison": r.get("comparison"), "falsification_criterion": r.get("falsification_criterion"),
+                     "copied_from": "https://huggingface.co/datasets/Neurips-2026-MLIntern-Repro/papers", "dataset_revision": r.get("dataset_revision")},
         "links": {"official_claim_record": f"https://huggingface.co/datasets/Neurips-2026-MLIntern-Repro/papers/viewer/default/train?row={r['row']}" if r.get("row") is not None else None,
                   "arxiv": r.get("arxiv_url"), "pdf": f"https://arxiv.org/pdf/{aid}", "openreview": r.get("openreview_url"), "papers_with_code": r.get("papers_with_code_url"),
                   "repo": repo, "github_in_pdf": links("github"), "huggingface_in_pdf": links("hf"), "project_pages": links("project_page"), "anonymous_code": links("anonymous4open"),
@@ -83,7 +86,7 @@ for r in claims:
     })
 
 # ---- map: embedding of title + claim only -> 2D layout, nearest neighbours, automatic topic names
-SRC = {c["arxiv_id"]: c for c in claims}     # organiser text is read from data/claims.json for embedding only; it is never written to the evidence files
+SRC = {c["arxiv_id"]: c for c in claims}     # the organisers' rows; only the four "official" fields above are copied into the evidence files
 texts = [f"{r['title']}. {SRC[r['arxiv_id']]['claim']}" for r in recs]; emb_path = DATA / "embeddings.npy"
 if args.no_embed and emb_path.exists() and np.load(emb_path).shape[0] == len(texts): emb = np.load(emb_path); print("embeddings: reused", emb.shape)
 else:
@@ -154,6 +157,9 @@ CSV_COLUMNS = [
     ("presentation", "labels.presentation", lambda r: r["labels"]["presentation"]), ("track", "labels.track", lambda r: r["labels"]["track"]),
     ("difficulty", "labels.difficulty", lambda r: r["labels"]["difficulty"]), ("claim_kind", "labels.claim_kind", lambda r: r["labels"]["claim_kind"]),
     ("claim_source", "claim_source", lambda r: r["claim_source"]),
+    ("official_claim", "official.claim", lambda r: r["official"]["claim"]), ("official_metric", "official.metric", lambda r: r["official"]["metric"]),
+    ("official_comparison", "official.comparison", lambda r: r["official"]["comparison"]),
+    ("official_falsification_criterion", "official.falsification_criterion", lambda r: r["official"]["falsification_criterion"]),
     ("repo_url", "links.repo.url", lambda r: _repo(r).get("url")), ("repo_status", "links.repo.status (no_link_found when links.repo is null)", lambda r: _repo(r).get("status") or "no_link_found"),
     ("repo_last_commit", "links.repo.head_date (date part)", lambda r: (_repo(r).get("head_date") or "")[:10]),
     ("turnkey", "scores.turnkey", lambda r: r["scores"]["turnkey"]), ("turnkey_basis", "scores.turnkey_basis", lambda r: r["scores"]["turnkey_basis"]),

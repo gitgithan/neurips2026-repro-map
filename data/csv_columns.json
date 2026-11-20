@@ -28,6 +28,22 @@
   "json_path": "claim_source"
  },
  {
+  "csv_column": "official_claim",
+  "json_path": "official.claim"
+ },
+ {
+  "csv_column": "official_metric",
+  "json_path": "official.metric"
+ },
+ {
+  "csv_column": "official_comparison",
+  "json_path": "official.comparison"
+ },
+ {
+  "csv_column": "official_falsification_criterion",
+  "json_path": "official.falsification_criterion"
+ },
+ {
   "csv_column": "repo_url",
   "json_path": "links.repo.url"
  },

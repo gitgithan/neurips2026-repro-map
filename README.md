@@ -54,7 +54,8 @@ Every paper has one record in `data/papers_evidence.json`. The page's detail pan
 | Section | Fields | Where it comes from |
 |---|---|---|
 | `labels` | oral / spotlight / poster, track, difficulty, table-or-figure claim | The official claim list, unchanged |
-| `claim_source` | Where the organisers say the claim is, e.g. "Table 2, page 6". The claim text itself is not copied into the data files; see "The two data files" | The organisers' dataset |
+| `claim_source` | Where the organisers say the claim is, e.g. "Table 2, page 6" | The organisers' dataset |
+| `official` | The claim to verify, the metric, what it is compared against, and the falsification criterion (what result would count as overturning the claim), with the dataset revision they were copied from | The organisers' dataset, unchanged |
 | `links.repo` | The repository judged to be the paper's own, how it was found (PDF or project page), confidence, whether it is alive, the commit that was scanned | PDF link extraction + an HTTP check + a shallow clone |
 | `links.github_in_pdf`, `huggingface_in_pdf`, `project_pages`, `anonymous_code` | Every other link of that kind in the PDF, with page numbers, surrounding text, and whether it looks like the authors' own or cited third-party work | PDF link extraction |
 | `links.openreview`, `arxiv`, `papers_with_code` | Where to read reviews and reach the authors | The official claim list |
@@ -71,9 +72,9 @@ Every paper has one record in `data/papers_evidence.json`. The page's detail pan
 `data/papers_evidence.json` and `data/papers_evidence.csv` describe the same 1,046 papers and cannot disagree.
 
 - **The JSON is the full record**: every link with its page and context, every scan finding with the quoted `file:line`, the map position and neighbours.
-- **The CSV is a flat view of the JSON.** Each of its 39 columns is computed from one JSON record by a fixed rule (a value, a count, or a list joined with `;`). The rules are listed in `data/csv_columns.json` as `csv_column → json_path`.
+- **The CSV is a flat view of the JSON.** Each of its 43 columns is computed from one JSON record by a fixed rule (a value, a count, or a list joined with `;`). The rules are listed in `data/csv_columns.json` as `csv_column → json_path`.
 - **This is checked on every build.** After writing both files, the pipeline reads them back and compares every cell of the CSV with the value computed from the JSON; the build fails if any differ.
-- **Neither file repeats the organisers' text.** They hold what this project adds, plus the paper's id, title and four official labels so that a row is readable on its own. The claim, metric, comparison, falsification criterion, authors and summaries stay in the organisers' dataset: join on `arxiv_id`, or follow `official_claim_record`.
+- **Four columns are the organisers', not ours.** `official_claim`, `official_metric`, `official_comparison` and `official_falsification_criterion` (the `official` block in the JSON) are copied unchanged from the organisers' dataset, at the revision recorded in `official.dataset_revision`, so that a row can be read on its own. Everything else is what this project adds. The organisers' dataset is the authority: if it is corrected later, these copies are out of date until the pipeline is re-run. Authors and the background and method summaries are not copied.
 
 The page (`index.html`) is different: to show a claim, it has to contain it. When the page is built, that text is read from the organisers' dataset (step 1) and placed in the page, unchanged.
 
@@ -88,6 +89,11 @@ The page (`index.html`) is different: to show a claim, it has to contain it. Whe
 | Column | Meaning | How to use it |
 |---|---|---|
 | `arxiv_id`, `title` | The paper | |
+| `claim_source` | Where the claim is in the paper, e.g. "Table 2, page 6" | Open that page first |
+| `official_claim` | The result you are asked to reproduce, in the organisers' words | This, not the abstract, is what your verdict is about |
+| `official_metric` | What is measured and how it is reported (seeds, spread) | Tells you what number to produce and what tolerance is fair |
+| `official_comparison` | What the method is compared against | Tells you which baselines you would have to run as well |
+| `official_falsification_criterion` | What result would count as overturning the claim | Read it before choosing: it often reveals the real cost, such as "after retraining" |
 | `presentation` | `oral`, `spotlight` or `poster` | The conference's own selection; it says nothing about how easy the paper is to reproduce |
 | `track` | `main`, `evaluations_datasets`, or a journal track | Benchmark and dataset papers often need data access more than GPUs |
 | `difficulty` | `standard` or `harder` — the organisers' label for claims that are harder than most to reproduce | Not a reason to avoid a paper if you have the resources; a reason to read its evidence first |

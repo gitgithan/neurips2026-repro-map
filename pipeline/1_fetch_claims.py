@@ -17,7 +17,7 @@ ds = ds.remove_columns([c for c in ds.column_names if c == "image"])   # the cla
 print("columns:", ds.column_names)
 rows = []
 for row_index, r in enumerate(ds):
-    o = {k: r.get(k) for k in KEEP}; o["row"] = row_index     # position in the official list, used to link to that exact record
+    o = {k: r.get(k) for k in KEEP}; o["row"] = row_index; o["dataset_revision"] = REV     # position in the official list (links to that exact record) and the revision it was read from
     o["authors"] = list(o["authors"]) if isinstance(o["authors"], (list, tuple)) else [a.strip() for a in str(o["authors"] or "").split(",") if a.strip()]
     for k in r:                                    # keep whatever URL columns the dataset has (arXiv, OpenReview, ...)
         if k.endswith("_url") and isinstance(r[k], str): o[k] = r[k]
