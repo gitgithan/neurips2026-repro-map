@@ -24,7 +24,7 @@ The page is laid out as four steps.
 | 2 · Hide papers where… | Tick the things you cannot work around: no repository, a blocker, gated access, a hosted model, a native build, manual downloads, "harder than most", claim in the appendix, posters | Those papers disappear. Each switch shows how many papers it hides. These are yes/no facts, not preferences |
 | 3 · Read the evidence | Click a dot or a row | A panel lists every link, every scan finding with its file and line, hardware sentences, and the most similar papers |
 | 4 · Shortlist and compare | Press **+** on up to five papers (the hackathon limit), then "Compare side by side" | A table with one column per paper and one row per question you would ask before committing |
-| 5 · Ask ML Intern | Press **Ask ML Intern ↗** next to the shortlist | A question is written from your interests exactly as you typed them, the hide-switches you ticked, and your shortlisted papers (your top five if the shortlist is empty): each paper's claim, falsification criterion, repository and flagged issues. It is copied to your clipboard and ML Intern opens in HuggingChat in a new tab, under your own Hugging Face account. If the chat box is empty, paste. This page sends nothing anywhere itself |
+| 5 · Ask ML Intern | Press **Ask ML Intern ↗** next to the shortlist | A question is written from your interests exactly as you typed them, the hide-switches you ticked, and your shortlisted papers (your top five if the shortlist is empty): each paper's claim, falsification criterion, repository and flagged issues. It is copied to your clipboard and [ML Intern in HuggingChat](https://huggingface.co/chat/?mode=ml-intern) opens in a new tab, under your own Hugging Face account. If the chat box is empty, paste. Details: [Ask ML Intern](#ask-ml-intern) |
 
 Also on the page:
 
@@ -241,6 +241,26 @@ The "sim" numbers, the lines on the map and "more like this" all use the cosine 
 ### Suggestions
 
 "Close to what you asked for" lists the best matches not yet on your shortlist. "Something different" takes topics that none of your top matches belong to and offers, from each, the highest-scoring paper (ignoring the interest weight) that has a scanned repository with no blocker.
+
+### Ask ML Intern
+
+The button opens ML Intern, Hugging Face's research agent, which now lives inside HuggingChat: https://huggingface.co/chat/?mode=ml-intern . The map does not run ML Intern and has no account or key of its own; you use ML Intern under your own Hugging Face account, on whatever terms it offers you. Nothing leaves the page until you press the button. When you do, the question is copied to your clipboard and also placed in the link that opens, so HuggingChat receives it.
+
+What goes into the question:
+
+| What you did on the map | What the question contains |
+|---|---|
+| Typed in the interests box | Your text, word for word (`My interests: …`). Left out if the box is empty |
+| Ticked hide-switches | One line listing them (`I have ruled out papers where: …`) |
+| Shortlisted papers with **+** | Exactly those papers, up to five |
+| Shortlisted nothing | The five highest papers by your score that pass your hide-switches and filters. This is the score order, even if you re-sorted the table by another column |
+| Moved weights, chose a preset, starred papers | Not written into the question, but they decide which five papers are highest |
+
+For each paper the question gives: the title and arXiv link; the claim to verify and where it is in the paper (first 260 characters); the organisers' falsification criterion (first 200 characters); the repository link with its turnkey score, or "no repository found"; and up to four flagged issues. It ends by asking which paper to reproduce first and why, the first three steps, what is most likely to block you, and what reduced-scale version of the claim would still be a fair test.
+
+Not included: the weight values, the map view, the compare table, and each paper's metric, comparison baseline, hardware sentences and reading time. Add those by hand if they matter to your question.
+
+*When it is wrong:* the notes in the question are this map's scan results, with the same limits as the rest of the page. ML Intern's answer is its own; check it against the paper and the repository.
 
 ### Blockers, and ways round them
 
