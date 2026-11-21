@@ -85,10 +85,10 @@ a{color:var(--blue)}details.fold{margin-top:5px}details.fold>summary{cursor:poin
 <div id="main"><div id="left"><div id="mapwrap"><canvas id="gl"></canvas><div id="hint">scroll = zoom · drag = pan · hover = title · click = details · double-click = reset</div><div id="tip"></div><div id="legend"></div></div></div>
 <div id="vs" title="drag to resize"></div>
 <div id="right"><div id="prefs">
-<label class="biglab" for="int">What are you interested in? <span class="mut">Type topics separated by commas — the list below re-orders as you type</span></label>
-<textarea id="int" placeholder="e.g.  healthcare, brain decoding, LoRA, robot manipulation"></textarea>
+<label class="biglab" for="int">What are you interested in? <span class="mut">Type a few topics, or a whole sentence — the list below re-orders as you type</span></label>
+<textarea id="int" placeholder="e.g.  healthcare, brain decoding, LoRA   —  or  —   I want something on tutoring systems that trains on one small GPU"></textarea>
 <div class="row" id="sugg"></div><div id="mstat" class="mut"></div>
-<div class="row"><b style="color:var(--acc)">Shortlist</b><span id="short" class="sug"></span><button id="bCmp">Compare</button></div>
+<div class="row"><b style="color:var(--acc)">Shortlist</b><span id="short" class="sug"></span><button id="bCmp">Compare</button><button id="bMLI" title="Builds a question from your interests and your shortlisted papers (or your top 5 if the shortlist is empty), copies it, and opens ML Intern in HuggingChat in a new tab. You use your own Hugging Face account there.">Ask ML Intern ↗</button></div>
 <details class="fold" id="fFilt"><summary>Hide papers I cannot work with <span class="mut" id="nFilt"></span></summary>
 <div class="row" id="cons"></div>
 <div class="row"><label><input type="checkbox" id="c_match"> show only papers matching my interests</label><label><input type="checkbox" id="mfirst" checked> list matching papers first</label></div>
@@ -139,7 +139,16 @@ function save(){const h='w='+S.w.join('.')+'&q='+encodeURIComponent($('#int').va
 function load(){const p=new URLSearchParams(location.hash.slice(1));if(p.get('w')){const w=p.get('w').split('.').map(Number);if(w.length===W.length&&w.every(x=>x>=0&&x<=10))S.w=w}
  if(p.get('q'))$('#int').value=p.get('q');const ids=k=>(p.get(k)||'').split('~').filter(x=>x in IDX);S.likes=ids('l');S.short=ids('s').slice(0,5);(p.get('c')||'').split('.').forEach(k=>{if(CONS.some(c=>c[0]===k))S.cons[k]=true})}
 // ---- search: exact keyword + meaning (vocabulary vectors precomputed at build time; no model runs in the browser)
-function terms(){return [...new Set($('#int').value.toLowerCase().replace(/-/g,' ').split(/[,;\n]+/).map(s=>s.trim().replace(/\s+/g,' ')).filter(s=>s.length>1))]}
+const COMMON=30,DF=new Map();   // papers; a sentence word found in more papers than this is ignored unless it is a glossary term
+function df(w){if(!DF.has(w)){const x=new RegExp('(^|[^a-z0-9])'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));let n=0;for(const r of D)if(x.test(r.txt)||x.test(r.t.toLowerCase()))n++;DF.set(w,n)}return DF.get(w)}
+const STOP=new Set("a an the i im i'm we you my me our us want wants wanted like likes need needs looking look for something anything everything paper papers about on in of to and or but with without that this these those is are was be been can could would should do does it its into from at by as more most much many very really some any interested interest interests prefer please find show give using use uses used work works working run runs running have has had not no only just also so than then there which what who how when where if maybe ideally preferably one two new good best better thing things stuff kind sort related topic topics area areas field research study studies try trying help helps get make makes made will able".split(' '));
+// short entries are used as typed; an entry of four or more words is treated as a sentence: filler words are dropped and the known phrases and remaining words become separate interests
+function terms(){const out=[],rest=[];for(let s of $('#int').value.toLowerCase().replace(/-/g,' ').split(/[,;\n]+/)){s=s.trim().replace(/\s+/g,' ');if(s.length<2)continue;const ws=s.split(' ');if(ws.length<4){out.push(s);continue}
+  const k=s.replace(/[^a-z0-9+#' ]/g,' ').split(/\s+/).filter(w=>w&&!STOP.has(w));const c=[];for(let i=0;i<k.length;i++){const bi=k[i]+' '+(k[i+1]||'');if(bi in VIDX){c.push([bi,0]);i++}else if(k[i].length>2){const v=VOC[VIDX[k[i]]];c.push([k[i],v&&v[2]?0:df(k[i])])}}
+  // a word found in many papers ("small", "systems") says little about what you want: keep the specific ones, or the three rarest if nothing else was typed
+  c.filter(x=>x[1]<=COMMON).slice(0,8).forEach(x=>out.push(x[0]));c.filter(x=>x[1]>COMMON).forEach(x=>rest.push(x))}
+ if(!out.length)rest.sort((a,b)=>a[1]-b[1]).slice(0,3).forEach(x=>out.push(x[0]));
+ return [...new Set(out)]}
 function tvec(t){let ids=[];if(t in VIDX)ids=[VIDX[t]];else{const ws=t.split(' ');for(let i=0;i<ws.length;i++){const bi=ws[i]+' '+(ws[i+1]||'');if(bi in VIDX){ids.push(VIDX[bi]);i++}else if(ws[i] in VIDX)ids.push(VIDX[ws[i]])}}
  if(!ids.length)return null;const v=new Float32Array(DIM);ids.forEach(j=>{for(let k=0;k<DIM;k++)v[k]+=TV[j*DIM+k]});return v}
 function zsim(v){const s=new Float32Array(D.length);let m=0,q=0;for(let i=0;i<D.length;i++){let a=0;const o=i*DIM;for(let k=0;k<DIM;k++)a+=E[o+k]*v[k];s[i]=a;m+=a}m/=D.length;for(let i=0;i<D.length;i++)q+=(s[i]-m)**2;q=Math.sqrt(q/D.length)||1;for(let i=0;i<D.length;i++)s[i]=(s[i]-m)/q;return s}
@@ -352,7 +361,19 @@ document.addEventListener('click',e=>{const t=e.target,d=t.dataset||{};
  const op=t.closest('[data-open]');if(op){select(op.dataset.open,false);return}const go=t.closest('[data-go]');if(go){select(go.dataset.go,false);return}
  const tr=t.closest('#tb tr[data-id]');if(tr&&t.tagName!=='A'&&t.tagName!=='BUTTON')select(tr.dataset.id,false)});
 const say=t=>{$('#msg').textContent=t;const o=$('#mstat').innerHTML;$('#mstat').innerHTML='<span class="bad">'+esc(t)+'</span>';setTimeout(()=>{$('#msg').textContent='';render()},2200)};
-$('#bCmp').onclick=compare;$('#bOnly').onclick=()=>{if(!S.short.length){say('shortlist is empty');return}S.only=!S.only;render()};
+$('#bCmp').onclick=compare;
+// ---- hand-off to ML Intern: nothing is sent from this page; the question is put on the clipboard and in the link, and the visitor's own account is used there
+function mliPrompt(){const txt=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(),cut=(t,n)=>{t=txt(t);return t.length>n?t.slice(0,n)+'…':t};
+ const fromShort=S.short.length>0,P=fromShort?S.short.map(id=>D[IDX[id]]):D.filter(r=>pass(r)).sort((a,b)=>a.rank-b.rank).slice(0,5),T=$('#int').value.trim();
+ const L=['I am choosing a paper to reproduce for the NeurIPS 2026 ML Intern Reproduction Hackathon.',T?'My interests: '+T.replace(/\s+/g,' '):'',
+  (fromShort?'These are the papers on my shortlist':'These are my top-ranked papers')+' from the Reproduction Paper Map (https://huggingface.co/spaces/gitgithan/neurips2026-repro-map). The notes come from a read-only scan of each PDF and repository; nothing was run.',''];
+ P.forEach((r,i)=>{L.push(`${i+1}. ${r.t} — https://arxiv.org/abs/${r.id}`);L.push(`   Claim to verify (${txt(r.src)}): ${cut(r.claim,260)}`);if(r.crit)L.push(`   Counts as falsified if: ${cut(r.crit,200)}`);
+  L.push('   Code: '+(r.repo?r.repo+(r.rs==='cloned'?` (looks runnable: ${r.tk}/10)`:` (${txt(nice(r.rs))})`):'no repository found'));const I=issues(r).map(x=>txt(x[0]));if(I.length)L.push('   Flagged: '+I.slice(0,4).join('; '))});
+ L.push('','Please: (1) recommend which one to reproduce first and why, (2) give the first three concrete steps, (3) say what is most likely to block me and how to get round it, (4) say what reduced-scale version of the claim would still be a fair test.');
+ return L.join('\n')}
+$('#bMLI').onclick=()=>{const t=mliPrompt();window.open('https://huggingface.co/chat/?mode=ml-intern&q='+encodeURIComponent(t),'_blank','noopener');
+ (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>say('Question copied — if the ML Intern box is empty, paste it there'),()=>say('ML Intern opened in a new tab'))};
+$('#bOnly').onclick=()=>{if(!S.short.length){say('shortlist is empty');return}S.only=!S.only;render()};
 $('#share').onclick=()=>{save();(navigator.clipboard?navigator.clipboard.writeText(location.href):Promise.reject()).then(()=>say('link copied'),()=>say('copy the address bar'))};
 $('#reset').onclick=()=>{S.w=PRE.bal.slice();S.likes=[];S.short=[];S.cons={};S.only=false;$('#int').value='';$('#q').value='';$('#c_match').checked=false;$('#mfirst').checked=true;S.sort='score';S.dir=-1;$('#fTop').value='';$('#fTrk').value='';$('#sugg').innerHTML='';render()};
 $('#csv').onclick=()=>{const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"',rows=D.filter(r=>pass(r)).sort((a,b)=>a.rank-b.rank);const t=['my_rank,my_score,arxiv_id,title,presentation,track,difficulty,auto_topics,turnkey,checkability,read_mins,interest_match,on_shortlist,repo'].concat(rows.map(r=>[r.rank,r.score,r.id,q(r.t),r.pres,r.trk,r.diff,q(r.tops.join('; ')),r.tk,r.ck,r.mins,r.match==null?'':r.match.toFixed(2),S.short.includes(r.id),r.repo||''].join(','))).join('\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([t],{type:'text/csv'}));a.download='neurips2026_my_ranking.csv';a.click()};
