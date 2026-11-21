@@ -24,7 +24,7 @@ The page is laid out as four steps.
 | 2 · Hide papers where… | Tick the things you cannot work around: no repository, a blocker, gated access, a hosted model, a native build, manual downloads, "harder than most", claim in the appendix, posters | Those papers disappear. Each switch shows how many papers it hides. These are yes/no facts, not preferences |
 | 3 · Read the evidence | Click a dot or a row | A panel lists every link, every scan finding with its file and line, hardware sentences, and the most similar papers |
 | 4 · Shortlist and compare | Press **+** on up to five papers (the hackathon limit), then "Compare side by side" | A table with one column per paper and one row per question you would ask before committing |
-| 5 · Ask ML Intern | Press **Ask ML Intern ↗** next to the shortlist | A question is written from your interests exactly as you typed them, the hide-switches you ticked, and your shortlisted papers (your top five if the shortlist is empty), with each paper's claim, repository status and flagged issues, in as much detail as fits in a link. [ML Intern in HuggingChat](https://huggingface.co/chat/?mode=ml-intern) opens in a new tab with the question already typed into its message box, under your own Hugging Face account; read it, edit it if you like, and send. Details: [Ask ML Intern](#ask-ml-intern) |
+| 5 · Ask ML Intern | Press **Ask ML Intern ↗** next to the shortlist | A question is written from your interests exactly as you typed them, the hide-switches you ticked, and your shortlisted papers (your top five if the shortlist is empty), with each paper's claim, repository status and flagged issues, in as much detail as fits in a link. [ML Intern in HuggingChat](https://huggingface.co/chat/?mode=ml-intern) opens in a new tab with the question already typed into its message box, under your own Hugging Face account; read it, edit it if you like, and send. If the message box is ever empty, a note on the map offers **Copy the full question** to paste in by hand. Details: [Ask ML Intern](#ask-ml-intern) |
 
 Also on the page:
 
@@ -250,6 +250,8 @@ Nothing leaves the page until you press the button. When you do, the question tr
 
 - **It shrinks to fit.** With one or two papers it carries every detail below; with five it carries one compact line per paper.
 - **It points to the rest.** Every question ends with the address of the [evidence dataset](https://huggingface.co/datasets/gitgithan/neurips2026-repro-map-evidence), where the full scan record for each paper is stored by `arxiv_id`, so ML Intern can look up what did not fit. Whether it does so is up to ML Intern.
+
+**If the message box is empty.** The link is the only thing that carries the question across, and it depends on HuggingChat continuing to read it. So after you press the button, a note appears on the map, under the shortlist, with **Copy the full question** and **Show the question**. These give the full-detail version for all your papers, since the clipboard has no length limit; paste it into ML Intern, or into any other assistant.
 
 What goes into the question:
 

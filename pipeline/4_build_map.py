@@ -89,6 +89,7 @@ a{color:var(--blue)}details.fold{margin-top:5px}details.fold>summary{cursor:poin
 <textarea id="int" placeholder="e.g.  healthcare, brain decoding, LoRA   —  or  —   I want something on tutoring systems that trains on one small GPU"></textarea>
 <div class="row" id="sugg"></div><div id="mstat" class="mut"></div>
 <div class="row"><b style="color:var(--acc)">Shortlist</b><span id="short" class="sug"></span><button id="bCmp">Compare</button><button id="bMLI" title="Builds a question from your interests and your shortlisted papers (or your top 5 if the shortlist is empty) and opens ML Intern in HuggingChat in a new tab with the question already typed in. You use your own Hugging Face account there.">Ask ML Intern ↗</button></div>
+<div id="mliNote" style="display:none;margin:4px 0 6px;padding:7px 10px;border:1px solid var(--acc);border-radius:6px;font-size:12px">ML Intern opened in a new tab with your question typed in. <b>Message box empty there?</b> <button id="mliCopy">Copy the full question</button> then paste it into ML Intern. <button id="mliShow">Show the question</button> <button id="mliHide" title="Dismiss">✕</button> <b id="mliOk" class="good"></b><textarea id="mliTxt" readonly style="display:none;width:100%;height:170px;margin-top:6px;font-size:11px"></textarea></div>
 <details class="fold" id="fFilt"><summary>Hide papers I cannot work with <span class="mut" id="nFilt"></span></summary>
 <div class="row" id="cons"></div>
 <div class="row"><label><input type="checkbox" id="c_match"> show only papers matching my interests</label><label><input type="checkbox" id="mfirst" checked> list matching papers first</label></div>
@@ -383,7 +384,11 @@ function mliPrompt(lv){const txt=h=>String(h||'').replace(/<[^>]+>/g,'').replace
  return L.join('\n')}
 // the fullest version that fits the link is used: one or two shortlisted papers get every detail, five get a compact line each
 function mliLink(){let q='';for(let lv=0;lv<5;lv++){q=encodeURIComponent(mliPrompt(lv));if(q.length<=MLI_MAX)break}return 'https://huggingface.co/chat/?mode=ml-intern&q='+q.slice(0,MLI_MAX+400).replace(/%[0-9A-F]?$/,'')}
-$('#bMLI').onclick=()=>{window.open(mliLink(),'_blank','noopener')};
+$('#bMLI').onclick=()=>{window.open(mliLink(),'_blank','noopener');$('#mliTxt').value=mliPrompt(0);$('#mliOk').textContent='';$('#mliNote').style.display='block'};
+// fallback if the link does not fill ML Intern's message box: the full-detail question, with no length limit, by clipboard or by selecting the text
+function mliShow(sel){const t=$('#mliTxt');t.style.display='block';if(sel){t.focus();t.select()}}
+$('#mliCopy').onclick=()=>{const t=$('#mliTxt').value;(navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>{$('#mliOk').textContent='Copied — paste with Ctrl+V'},()=>{mliShow(true);$('#mliOk').textContent='Select the text below and copy it (Ctrl+C)'})};
+$('#mliShow').onclick=()=>{const t=$('#mliTxt');if(t.style.display==='block')t.style.display='none';else mliShow(false)};$('#mliHide').onclick=()=>{$('#mliNote').style.display='none'};
 $('#bOnly').onclick=()=>{if(!S.short.length){say('shortlist is empty');return}S.only=!S.only;render()};
 $('#share').onclick=()=>{save();(navigator.clipboard?navigator.clipboard.writeText(location.href):Promise.reject()).then(()=>say('link copied'),()=>say('copy the address bar'))};
 $('#reset').onclick=()=>{S.w=PRE.bal.slice();S.likes=[];S.short=[];S.cons={};S.only=false;$('#int').value='';$('#q').value='';$('#c_match').checked=false;$('#mfirst').checked=true;S.sort='score';S.dir=-1;$('#fTop').value='';$('#fTrk').value='';$('#sugg').innerHTML='';render()};
