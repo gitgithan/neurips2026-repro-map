@@ -375,8 +375,8 @@ document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const o=['#cm
 const MLI_MAX=2000;   // characters of encoded question allowed in the link: a signed-out visitor is sent through a sign-in redirect that re-encodes the link, and a long one fails with "414 URI Too Long"
 function mliPrompt(lv){const txt=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(),cut=(t,n)=>{t=txt(t);return t.length>n?t.slice(0,n)+'…':t};
  const [nc,nk,ni,nt]=[[260,200,4,200],[150,0,3,120],[80,0,2,90],[0,0,2,70],[0,0,1,45]][lv],brief=lv>=3;
- const fromShort=S.short.length>0,P=fromShort?S.short.map(id=>D[IDX[id]]):D.filter(r=>pass(r)).sort((a,b)=>a.rank-b.rank).slice(0,5),T=$('#int').value.trim().replace(/\s+/g,' '),X=CONS.filter(c=>S.cons[c[0]]).map(c=>c[1]);
- const L=[brief?'I am choosing a paper for the NeurIPS 2026 ML Intern Reproduction Hackathon.':'I am choosing a paper to reproduce for the NeurIPS 2026 ML Intern Reproduction Hackathon.'];if(T)L.push('My interests: '+cut(T,brief?120:300));if(X.length)L.push('I have ruled out papers where: '+X.join('; ')+'.');
+ const fromShort=S.short.length>0,P=fromShort?S.short.map(id=>D[IDX[id]]):D.filter(r=>pass(r)).sort((a,b)=>a.rank-b.rank).slice(0,5),T=$('#int').value.trim().replace(/\s+/g,' ');
+ const L=[brief?'I am choosing a paper for the NeurIPS 2026 ML Intern Reproduction Hackathon.':'I am choosing a paper to reproduce for the NeurIPS 2026 ML Intern Reproduction Hackathon.'];if(T)L.push('My interests: '+cut(T,brief?120:300));
  L.push(brief?(fromShort?'My shortlist':'My top-ranked papers')+', with notes from a read-only scan (https://huggingface.co/spaces/gitgithan/neurips2026-repro-map):'
   :(fromShort?'These are the papers on my shortlist':'These are my top-ranked papers')+' from the Reproduction Paper Map (https://huggingface.co/spaces/gitgithan/neurips2026-repro-map). The notes come from a read-only scan of each PDF and repository; nothing was run.');
  P.forEach((r,i)=>{const code=r.repo?(r.rs==='cloned'?`repo looks runnable ${r.tk}/10`:'repo '+txt(nice(r.rs))):'no repository found',I=issues(r).map(x=>txt(x[0])).slice(0,ni);
