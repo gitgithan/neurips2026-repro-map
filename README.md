@@ -30,7 +30,7 @@ Also on the page:
 
 - **Similarity lines** are off by default; the button in the header turns them on.
 - **Weights for "my score"** (collapsed by default): six sliders. The coloured bar next to each score shows how much each one contributed. There is no built-in ranking; the default is equal weights.
-- **☆ "more like this"**: ranks papers with similar text higher. Separate from the shortlist.
+- **☆ Star ("more like this")**: ranks papers with similar text higher. Separate from the shortlist. Up to 12 papers. Your starred papers are listed in the **★ Starred** row above the shortlist, which stays put however the ranking below changes; click a name there to open the paper. Unstar with the ✕ on its name, with the ★ button in its row of the ranking, or in the paper's panel; "Clear stars" removes them all.
 - **Suggestions**: "Close to what you asked for", and "Something different" — runnable papers from topics your interests do not touch, for people who want to explore.
 - **Map**: scroll to zoom, drag to pan, hover for a title, double-click to reset. Papers matching your interests get a white ring; shortlisted papers a square. Click a legend entry to isolate a group.
 - **Resizing**: drag the bar between the map and the right-hand side, or the bar above the table.
