@@ -24,7 +24,7 @@ The page is laid out as four steps.
 | 2 · Hide papers where… | Tick the things you cannot work around: no repository, a blocker, gated access, a hosted model, a native build, manual downloads, "harder than most", claim in the appendix, posters | Those papers disappear. Each switch shows how many papers it hides. These are yes/no facts, not preferences |
 | 3 · Read the evidence | Click a dot or a row | A panel lists every link, every scan finding with its file and line, hardware sentences, and the most similar papers |
 | 4 · Shortlist and compare | Press **+** on up to five papers (the hackathon limit), then "Compare side by side" | A table with one column per paper and one row per question you would ask before committing |
-| 5 · Ask ML Intern | Press **Ask ML Intern ↗** next to the shortlist | A question is written from your interests exactly as you typed them, the hide-switches you ticked, and your shortlisted papers (your top five if the shortlist is empty): each paper's claim, falsification criterion, repository and flagged issues. It is copied to your clipboard and [ML Intern in HuggingChat](https://huggingface.co/chat/?mode=ml-intern) opens in a new tab, under your own Hugging Face account. If the chat box is empty, paste. Details: [Ask ML Intern](#ask-ml-intern) |
+| 5 · Ask ML Intern | Press **Ask ML Intern ↗** next to the shortlist | A question is written from your interests exactly as you typed them, the hide-switches you ticked, and your shortlisted papers (your top five if the shortlist is empty): each paper's claim, falsification criterion, repository and flagged issues. It is copied to your clipboard and [ML Intern in HuggingChat](https://huggingface.co/chat/?mode=ml-intern) opens in a new tab, under your own Hugging Face account. The question should already be typed into ML Intern's message box; if that box opens empty, press Ctrl+V (Cmd+V on a Mac) to paste it in, then send. Details: [Ask ML Intern](#ask-ml-intern) |
 
 Also on the page:
 
@@ -244,7 +244,7 @@ The "sim" numbers, the lines on the map and "more like this" all use the cosine 
 
 ### Ask ML Intern
 
-The button opens ML Intern, Hugging Face's research agent, which now lives inside HuggingChat: https://huggingface.co/chat/?mode=ml-intern . The map does not run ML Intern and has no account or key of its own; you use ML Intern under your own Hugging Face account, on whatever terms it offers you. Nothing leaves the page until you press the button. When you do, the question is copied to your clipboard and also placed in the link that opens, so HuggingChat receives it.
+The button opens ML Intern, Hugging Face's research agent, which now lives inside HuggingChat: https://huggingface.co/chat/?mode=ml-intern . The map does not run ML Intern and has no account or key of its own; you use ML Intern under your own Hugging Face account, on whatever terms it offers you. Nothing leaves the page until you press the button. When you do, the question is copied to your clipboard and also placed in the link that opens, so HuggingChat receives it. The link is meant to fill ML Intern's message box for you. If the box opens empty, the question is still on your clipboard: click in the box and paste it with Ctrl+V (Cmd+V on a Mac).
 
 What goes into the question:
 
