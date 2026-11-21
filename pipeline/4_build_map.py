@@ -66,7 +66,7 @@ th{position:sticky;top:0;background:var(--panel);cursor:pointer;z-index:1}.hh{bo
 .pill{display:inline-block;border:1px solid var(--line);border-radius:14px;padding:2px 11px;margin:1px 2px;text-decoration:none;background:#0f141d;white-space:nowrap}.pill:hover{border-color:var(--acc)}
 details.sec{border:1px solid var(--line);border-radius:8px;margin:8px 0;padding:0 10px}details.sec[open]{padding-bottom:8px}details.sec>summary{cursor:pointer;font-weight:700;padding:7px 0;color:var(--ink)}.sub{color:var(--acc);font-size:11px;text-transform:uppercase;letter-spacing:.04em;margin:8px 0 2px}
 @media (max-width:820px){.dl{grid-template-columns:1fr;gap:1px 0}.dl dt{margin-top:6px}}
-.over li{cursor:pointer;margin:2px 0}.over li:hover{color:var(--acc)}.over ul{margin:4px 0;padding-left:16px}.x{position:absolute;right:10px;top:8px;z-index:6}
+.over li{cursor:pointer;margin:2px 0}.over li:hover{color:var(--acc)}.over ul{margin:4px 0;padding-left:16px}.over .x{position:sticky;top:0;z-index:6;display:inline-block;margin:0 0 10px 0;padding:7px 16px;font-size:13px;font-weight:700;background:var(--acc);color:#111;border:0;border-radius:6px;box-shadow:0 2px 10px rgba(0,0,0,.55)}.over .x:hover{filter:brightness(1.12)}.over .x small{font-weight:400;opacity:.75;margin-left:6px}
 #cmpt th,#cmpt td{border:1px solid var(--line);min-width:170px;max-width:300px;font-size:12px}#cmpt th:first-child,#cmpt td:first-child{min-width:120px;max-width:150px;color:var(--mut);position:sticky;left:0;background:var(--panel)}#cmpt th{position:static;cursor:default}
 #foot{flex:0 0 auto;padding:4px 12px;border-top:1px solid var(--line);background:var(--panel);font-size:11.5px;color:var(--mut)}#foot b{color:var(--ink)}
 #tip{position:absolute;pointer-events:none;background:#000d;padding:3px 7px;border-radius:5px;display:none;max-width:320px;z-index:4}
@@ -293,7 +293,7 @@ function select(id,scroll){S.sel=id;const r=D[IDX[id]];V.cx=r.x;V.cy=r.y;if(!scr
   tile('',`${r.score}`,`my score · #${r.rank}`)].join('');
  const repoLine=r.repo?`<div class="kv"><a href="${esc(r.repo)}" target="_blank">${esc(r.repo.replace('https://',''))}</a><br><span class="mut">found via ${esc(r.rvia==='pdf'?'the PDF':'the project page')} · confidence ${esc(r.rconf||'?')} · ${scanned?`read at commit ${r.rsha}, last commit ${r.rdate}`:r.rs==='dead'?'<span class="bad">link returns 404</span>':esc(nice(r.rs))}</span></div>`:'<div class="kv mut">None found in the PDF or on its project page.</div>';
  const nLinks=other.length+r.hf.length+r.pp.length+r.anon.length+(r.repo?1:0);
- $('#card').style.display='block';$('#card').scrollTop=0;$('#card').innerHTML=`<button class="x" data-close="1">✕ back to list</button>
+ $('#card').style.display='block';$('#card').scrollTop=0;$('#card').innerHTML=`<button class="x" data-close="1">← Back to list <small>Esc</small></button>
  <h3>${esc(r.t)}</h3><div class="mut" style="font-size:12px">${esc(r.au.join(', '))}</div>
  <div style="margin:6px 0 2px">${badges(r)} ${autos(r)}</div>
  <div class="row"><button data-short="${r.id}" class="${S.short.includes(r.id)?'on':''}">${S.short.includes(r.id)?'✓ on my shortlist':'+ add to my shortlist'}</button><button data-like="${r.id}" class="${S.likes.includes(r.id)?'on':''}">${S.likes.includes(r.id)?'★ ranking similar papers higher':'☆ show me more like this'}</button>
@@ -324,7 +324,7 @@ function select(id,scroll){S.sel=id;const r=D[IDX[id]];V.cx=r.x;V.cy=r.y;if(!scr
 // ---- compare (up to 5)
 function cosP(i,j){let s=0;for(let k=0;k<DIM;k++)s+=E[i*DIM+k]*E[j*DIM+k];return s/16129}
 function compare(){const P=S.short.map(id=>D[IDX[id]]);$('#card').style.display='none';const c=$('#cmp');c.style.display='block';c.scrollTop=0;const ORG=' <span class="mut" style="font-size:10px">(organisers)</span>';
- if(P.length<2){c.innerHTML='<button class="x" data-closecmp="1">✕ back to list</button><h3>Compare papers</h3><p class="mut">Add at least two papers to your shortlist with the + button, then compare them here. Up to five — the hackathon allows five papers per person.</p>';return}
+ if(P.length<2){c.innerHTML='<button class="x" data-closecmp="1">← Back to list <small>Esc</small></button><h3>Compare papers</h3><p class="mut">Add at least two papers to your shortlist with the + button, then compare them here. Up to five — the hackathon allows five papers per person.</p>';return}
  const keys=o=>NK(o)?Object.keys(o).map(nice).join(', '):'<span class="mut">none found</span>',ns='<span class="mut">no repository read</span>',sc=r=>r.rs==='cloned';
  const ROWS=[['Official labels',r=>badges(r)],['Automatic topics / areas',r=>autos(r)],
   ['Claim to verify',r=>`<b>${esc(r.src)}</b><br>${esc(r.claim)}<br>${claimLinks(r)}`],['Metric',r=>esc(r.metric)],['Compared against',r=>esc(r.cmp)||'–'],['Counts as falsified if',r=>esc(r.crit)||'–'],
@@ -339,7 +339,7 @@ function compare(){const P=S.short.map(id=>D[IDX[id]]);$('#card').style.display=
   ['Building blocks for award entries',r=>sc(r)?[r.facts.demo_code&&'demo code (Gradio / Streamlit)',r.facts.environment_code&&'environment code (Gym-style)',r.facts.notebook_or_colab&&'Colab notebook',r.lic&&'licence: '+r.lic,r.tests&&'has tests'].filter(Boolean).join('; ')||'<span class="mut">none found</span>':ns],
   ['Overlap with the rest of your shortlist',(r,i)=>{let b=-1,bs=-1;P.forEach((o,j)=>{if(j!==i){const s=cosP(IDX[r.id],IDX[o.id]);if(s>bs){bs=s;b=j}}});return `closest: #${b+1} (sim ${bs.toFixed(2)})${bs>.85?' <span class="bad">— very similar topic</span>':bs<.72?' <span class="good">— different area</span>':''}`}],
   ['My score',r=>`${bar(r)}<b>${r.score}</b> (#${r.rank})`]];
- c.innerHTML=`<button class="x" data-closecmp="1">✕ back to list</button><h3>Compare ${P.length} shortlisted papers</h3><div class="mut">Rows are facts to weigh, not a verdict. Nothing is highlighted as "best": which row matters depends on your time, hardware and the award you are aiming for. ${SIMNOTE}</div>
+ c.innerHTML=`<button class="x" data-closecmp="1">← Back to list <small>Esc</small></button><h3>Compare ${P.length} shortlisted papers</h3><div class="mut">Rows are facts to weigh, not a verdict. Nothing is highlighted as "best": which row matters depends on your time, hardware and the award you are aiming for. ${SIMNOTE}</div>
  <div style="overflow:auto;margin-top:6px"><table id="cmpt"><tr><th></th>${P.map((r,i)=>`<th>#${i+1} <a href="https://arxiv.org/abs/${r.id}" target="_blank">${r.id}</a><br>${esc(r.t)}<br><button data-open="${r.id}">details</button> <button data-short="${r.id}">remove</button></th>`).join('')}</tr>
  ${ROWS.map(([n,f])=>`<tr><td>${n}${['Official labels','Claim to verify','Metric','Compared against','Counts as falsified if'].includes(n)?ORG:''}</td>${P.map((r,i)=>`<td>${f(r,i)}</td>`).join('')}</tr>`).join('')}</table></div>`}
 // ---- controls
@@ -364,6 +364,7 @@ document.addEventListener('click',e=>{const t=e.target,d=t.dataset||{};
  const tr=t.closest('#tb tr[data-id]');if(tr&&t.tagName!=='A'&&t.tagName!=='BUTTON')select(tr.dataset.id,false)});
 const say=t=>{$('#msg').textContent=t;const o=$('#mstat').innerHTML;$('#mstat').innerHTML='<span class="bad">'+esc(t)+'</span>';setTimeout(()=>{$('#msg').textContent='';render()},2200)};
 $('#bCmp').onclick=compare;
+document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const o=['#cmp','#card'].map(q=>$(q)).find(x=>x.style.display==='block');if(o){const b=o.querySelector('.x');if(b)b.click()}});
 // ---- hand-off to ML Intern: nothing is sent from this page; the question is put on the clipboard and in the link, and the visitor's own account is used there
 function mliPrompt(){const txt=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(),cut=(t,n)=>{t=txt(t);return t.length>n?t.slice(0,n)+'…':t};
  const fromShort=S.short.length>0,P=fromShort?S.short.map(id=>D[IDX[id]]):D.filter(r=>pass(r)).sort((a,b)=>a.rank-b.rank).slice(0,5),T=$('#int').value.trim();
