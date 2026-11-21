@@ -107,10 +107,12 @@ function load(){const p=new URLSearchParams(location.hash.slice(1));if(p.get('w'
 // ---- search: exact keyword + meaning (vocabulary vectors precomputed at build time; no model runs in the browser)
 const COMMON=30,DF=new Map();   // papers; a sentence word found in more papers than this is ignored unless it is a glossary term
 function df(w){if(!DF.has(w)){const x=new RegExp('(^|[^a-z0-9])'+w.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'));let n=0;for(const r of D)if(x.test(r.txt)||x.test(r.t.toLowerCase()))n++;DF.set(w,n)}return DF.get(w)}
+const NEG=new Set(['not','no','without','except','excluding','avoid','avoiding']);
 const STOP=new Set("a an the i im i'm we you my me our us want wants wanted like likes need needs looking look for something anything everything paper papers about on in of to and or but with without that this these those is are was be been can could would should do does it its into from at by as more most much many very really some any interested interest interests prefer please find show give using use uses used work works working run runs running have has had not no only just also so than then there which what who how when where if maybe ideally preferably one two new good best better thing things stuff kind sort related topic topics area areas field research study studies try trying help helps get make makes made will able".split(' '));
 // short entries are used as typed; an entry of four or more words is treated as a sentence: filler words are dropped and the known phrases and remaining words become separate interests
 function terms(){const out=[],rest=[];for(let s of $('#int').value.toLowerCase().replace(/-/g,' ').split(/[,;\n]+/)){s=s.trim().replace(/\s+/g,' ');if(s.length<2)continue;const ws=s.split(' ');if(ws.length<4){out.push(s);continue}
-  const k=s.replace(/[^a-z0-9+#' ]/g,' ').split(/\s+/).filter(w=>w&&!STOP.has(w));const c=[];for(let i=0;i<k.length;i++){const bi=k[i]+' '+(k[i+1]||'');if(bi in VIDX){c.push([bi,0]);i++}else if(k[i].length>2){const v=VOC[VIDX[k[i]]];c.push([k[i],v&&v[2]?0:df(k[i])])}}
+  const raw=s.replace(/[^a-z0-9+#' ]/g,' ').split(/\s+/).filter(Boolean),k=[];for(let i=0;i<raw.length;i++){const w=raw[i];if(NEG.has(w)){let j=i+1;while(j<raw.length&&STOP.has(raw[j]))j++;i=(raw[j]+' '+(raw[j+1]||'')) in VIDX?j+1:j;continue}if(!STOP.has(w))k.push(w)}   // the word or known phrase after not / no / without is left out
+  const c=[];for(let i=0;i<k.length;i++){const bi=k[i]+' '+(k[i+1]||'');if(bi in VIDX){c.push([bi,0]);i++}else if(k[i].length>2){const v=VOC[VIDX[k[i]]];c.push([k[i],v&&v[2]?0:df(k[i])])}}
   // a word found in many papers ("small", "systems") says little about what you want: keep the specific ones, or the three rarest if nothing else was typed
   c.filter(x=>x[1]<=COMMON).slice(0,8).forEach(x=>out.push(x[0]));c.filter(x=>x[1]>COMMON).forEach(x=>rest.push(x))}
  if(!out.length)rest.sort((a,b)=>a[1]-b[1]).slice(0,3).forEach(x=>out.push(x[0]));
@@ -331,11 +333,11 @@ $('#bCmp').onclick=compare;
 // ---- hand-off to ML Intern: nothing is sent from this page; the question is put on the clipboard and in the link, and the visitor's own account is used there
 function mliPrompt(){const txt=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(),cut=(t,n)=>{t=txt(t);return t.length>n?t.slice(0,n)+'…':t};
  const fromShort=S.short.length>0,P=fromShort?S.short.map(id=>D[IDX[id]]):D.filter(r=>pass(r)).sort((a,b)=>a.rank-b.rank).slice(0,5),T=$('#int').value.trim();
- const L=['I am choosing a paper to reproduce for the NeurIPS 2026 ML Intern Reproduction Hackathon.',T?'My interests: '+T.replace(/\s+/g,' '):'',
+ const L=['I am choosing a paper to reproduce for the NeurIPS 2026 ML Intern Reproduction Hackathon.',T?'My interests: '+T.replace(/\s+/g,' '):'',(x=>x.length?'I have ruled out papers where: '+x.join('; ')+'.':'')(CONS.filter(c=>S.cons[c[0]]).map(c=>c[1])),
   (fromShort?'These are the papers on my shortlist':'These are my top-ranked papers')+' from the Reproduction Paper Map (https://huggingface.co/spaces/gitgithan/neurips2026-repro-map). The notes come from a read-only scan of each PDF and repository; nothing was run.',''];
  P.forEach((r,i)=>{L.push(`${i+1}. ${r.t} — https://arxiv.org/abs/${r.id}`);L.push(`   Claim to verify (${txt(r.src)}): ${cut(r.claim,260)}`);if(r.crit)L.push(`   Counts as falsified if: ${cut(r.crit,200)}`);
   L.push('   Code: '+(r.repo?r.repo+(r.rs==='cloned'?` (looks runnable: ${r.tk}/10)`:` (${txt(nice(r.rs))})`):'no repository found'));const I=issues(r).map(x=>txt(x[0]));if(I.length)L.push('   Flagged: '+I.slice(0,4).join('; '))});
- L.push('','Please: (1) recommend which one to reproduce first and why, (2) give the first three concrete steps, (3) say what is most likely to block me and how to get round it, (4) say what reduced-scale version of the claim would still be a fair test.');
+ for(let i=L.length-1;i>=1;i--)if(L[i]===''&&i<3)L.splice(i,1);L.push('','Please: (1) recommend which one to reproduce first and why, (2) give the first three concrete steps, (3) say what is most likely to block me and how to get round it, (4) say what reduced-scale version of the claim would still be a fair test.');
  return L.join('\n')}
 $('#bMLI').onclick=()=>{const t=mliPrompt();window.open('https://huggingface.co/chat/?mode=ml-intern&q='+encodeURIComponent(t),'_blank','noopener');
  (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>say('Question copied — if the ML Intern box is empty, paste it there'),()=>say('ML Intern opened in a new tab'))};
