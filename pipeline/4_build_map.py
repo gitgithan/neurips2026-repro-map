@@ -88,7 +88,7 @@ a{color:var(--blue)}details.fold{margin-top:5px}details.fold>summary{cursor:poin
 <label class="biglab" for="int">What are you interested in? <span class="mut">Type a few topics, or a whole sentence — the list below re-orders as you type</span></label>
 <textarea id="int" placeholder="e.g.  healthcare, brain decoding, LoRA   —  or  —   I want something on tutoring systems that trains on one small GPU"></textarea>
 <div class="row" id="sugg"></div><div id="mstat" class="mut"></div>
-<div class="row"><b style="color:var(--acc)">Shortlist</b><span id="short" class="sug"></span><button id="bCmp">Compare</button><button id="bMLI" title="Builds a question from your interests and your shortlisted papers (or your top 5 if the shortlist is empty), copies it, and opens ML Intern in HuggingChat in a new tab. You use your own Hugging Face account there.">Ask ML Intern ↗</button></div>
+<div class="row"><b style="color:var(--acc)">Shortlist</b><span id="short" class="sug"></span><button id="bCmp">Compare</button><button id="bMLI" title="Builds a question from your interests and your shortlisted papers (or your top 5 if the shortlist is empty) and opens ML Intern in HuggingChat in a new tab with the question already typed in. You use your own Hugging Face account there.">Ask ML Intern ↗</button></div>
 <details class="fold" id="fFilt"><summary>Hide papers I cannot work with <span class="mut" id="nFilt"></span></summary>
 <div class="row" id="cons"></div>
 <div class="row"><label><input type="checkbox" id="c_match"> show only papers matching my interests</label><label><input type="checkbox" id="mfirst" checked> list matching papers first</label></div>
@@ -365,7 +365,7 @@ document.addEventListener('click',e=>{const t=e.target,d=t.dataset||{};
 const say=t=>{$('#msg').textContent=t;const o=$('#mstat').innerHTML;$('#mstat').innerHTML='<span class="bad">'+esc(t)+'</span>';setTimeout(()=>{$('#msg').textContent='';render()},2200)};
 $('#bCmp').onclick=compare;
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const o=['#cmp','#card'].map(q=>$(q)).find(x=>x.style.display==='block');if(o){const b=o.querySelector('.x');if(b)b.click()}});
-// ---- hand-off to ML Intern: nothing is sent from this page; the question is put on the clipboard and in the link, and the visitor's own account is used there
+// ---- hand-off to ML Intern: the question travels in the link that opens; the visitor's own account is used there
 function mliPrompt(){const txt=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(),cut=(t,n)=>{t=txt(t);return t.length>n?t.slice(0,n)+'…':t};
  const fromShort=S.short.length>0,P=fromShort?S.short.map(id=>D[IDX[id]]):D.filter(r=>pass(r)).sort((a,b)=>a.rank-b.rank).slice(0,5),T=$('#int').value.trim();
  const L=['I am choosing a paper to reproduce for the NeurIPS 2026 ML Intern Reproduction Hackathon.',T?'My interests: '+T.replace(/\s+/g,' '):'',(x=>x.length?'I have ruled out papers where: '+x.join('; ')+'.':'')(CONS.filter(c=>S.cons[c[0]]).map(c=>c[1])),
@@ -374,8 +374,7 @@ function mliPrompt(){const txt=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/
   L.push('   Code: '+(r.repo?r.repo+(r.rs==='cloned'?` (looks runnable: ${r.tk}/10)`:` (${txt(nice(r.rs))})`):'no repository found'));const I=issues(r).map(x=>txt(x[0]));if(I.length)L.push('   Flagged: '+I.slice(0,4).join('; '))});
  for(let i=L.length-1;i>=1;i--)if(L[i]===''&&i<3)L.splice(i,1);L.push('','Please: (1) recommend which one to reproduce first and why, (2) give the first three concrete steps, (3) say what is most likely to block me and how to get round it, (4) say what reduced-scale version of the claim would still be a fair test.');
  return L.join('\n')}
-$('#bMLI').onclick=()=>{const t=mliPrompt();window.open('https://huggingface.co/chat/?mode=ml-intern&q='+encodeURIComponent(t),'_blank','noopener');
- (navigator.clipboard?navigator.clipboard.writeText(t):Promise.reject()).then(()=>say('Question copied. If ML Intern’s message box opens empty, click in it and press Ctrl+V to paste'),()=>say('ML Intern opened in a new tab'))};
+$('#bMLI').onclick=()=>{window.open('https://huggingface.co/chat/?mode=ml-intern&q='+encodeURIComponent(mliPrompt()),'_blank','noopener')};
 $('#bOnly').onclick=()=>{if(!S.short.length){say('shortlist is empty');return}S.only=!S.only;render()};
 $('#share').onclick=()=>{save();(navigator.clipboard?navigator.clipboard.writeText(location.href):Promise.reject()).then(()=>say('link copied'),()=>say('copy the address bar'))};
 $('#reset').onclick=()=>{S.w=PRE.bal.slice();S.likes=[];S.short=[];S.cons={};S.only=false;$('#int').value='';$('#q').value='';$('#c_match').checked=false;$('#mfirst').checked=true;S.sort='score';S.dir=-1;$('#fTop').value='';$('#fTrk').value='';$('#sugg').innerHTML='';render()};
