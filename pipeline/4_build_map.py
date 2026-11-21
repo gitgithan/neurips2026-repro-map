@@ -366,15 +366,24 @@ const say=t=>{$('#msg').textContent=t;const o=$('#mstat').innerHTML;$('#mstat').
 $('#bCmp').onclick=compare;
 document.addEventListener('keydown',e=>{if(e.key!=='Escape')return;const o=['#cmp','#card'].map(q=>$(q)).find(x=>x.style.display==='block');if(o){const b=o.querySelector('.x');if(b)b.click()}});
 // ---- hand-off to ML Intern: the question travels in the link that opens; the visitor's own account is used there
-function mliPrompt(){const txt=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(),cut=(t,n)=>{t=txt(t);return t.length>n?t.slice(0,n)+'…':t};
- const fromShort=S.short.length>0,P=fromShort?S.short.map(id=>D[IDX[id]]):D.filter(r=>pass(r)).sort((a,b)=>a.rank-b.rank).slice(0,5),T=$('#int').value.trim();
- const L=['I am choosing a paper to reproduce for the NeurIPS 2026 ML Intern Reproduction Hackathon.',T?'My interests: '+T.replace(/\s+/g,' '):'',(x=>x.length?'I have ruled out papers where: '+x.join('; ')+'.':'')(CONS.filter(c=>S.cons[c[0]]).map(c=>c[1])),
-  (fromShort?'These are the papers on my shortlist':'These are my top-ranked papers')+' from the Reproduction Paper Map (https://huggingface.co/spaces/gitgithan/neurips2026-repro-map). The notes come from a read-only scan of each PDF and repository; nothing was run.',''];
- P.forEach((r,i)=>{L.push(`${i+1}. ${r.t} — https://arxiv.org/abs/${r.id}`);L.push(`   Claim to verify (${txt(r.src)}): ${cut(r.claim,260)}`);if(r.crit)L.push(`   Counts as falsified if: ${cut(r.crit,200)}`);
-  L.push('   Code: '+(r.repo?r.repo+(r.rs==='cloned'?` (looks runnable: ${r.tk}/10)`:` (${txt(nice(r.rs))})`):'no repository found'));const I=issues(r).map(x=>txt(x[0]));if(I.length)L.push('   Flagged: '+I.slice(0,4).join('; '))});
- for(let i=L.length-1;i>=1;i--)if(L[i]===''&&i<3)L.splice(i,1);L.push('','Please: (1) recommend which one to reproduce first and why, (2) give the first three concrete steps, (3) say what is most likely to block me and how to get round it, (4) say what reduced-scale version of the claim would still be a fair test.');
+const MLI_MAX=2000;   // characters of encoded question allowed in the link: a signed-out visitor is sent through a sign-in redirect that re-encodes the link, and a long one fails with "414 URI Too Long"
+function mliPrompt(lv){const txt=h=>String(h||'').replace(/<[^>]+>/g,'').replace(/\s+/g,' ').trim(),cut=(t,n)=>{t=txt(t);return t.length>n?t.slice(0,n)+'…':t};
+ const [nc,nk,ni,nt]=[[260,200,4,200],[150,0,3,120],[80,0,2,90],[0,0,2,70],[0,0,1,45]][lv],brief=lv>=3;
+ const fromShort=S.short.length>0,P=fromShort?S.short.map(id=>D[IDX[id]]):D.filter(r=>pass(r)).sort((a,b)=>a.rank-b.rank).slice(0,5),T=$('#int').value.trim().replace(/\s+/g,' '),X=CONS.filter(c=>S.cons[c[0]]).map(c=>c[1]);
+ const L=[brief?'I am choosing a paper for the NeurIPS 2026 ML Intern Reproduction Hackathon.':'I am choosing a paper to reproduce for the NeurIPS 2026 ML Intern Reproduction Hackathon.'];if(T)L.push('My interests: '+cut(T,brief?120:300));if(X.length)L.push('I have ruled out papers where: '+X.join('; ')+'.');
+ L.push(brief?(fromShort?'My shortlist':'My top-ranked papers')+', with notes from a read-only scan (https://huggingface.co/spaces/gitgithan/neurips2026-repro-map):'
+  :(fromShort?'These are the papers on my shortlist':'These are my top-ranked papers')+' from the Reproduction Paper Map (https://huggingface.co/spaces/gitgithan/neurips2026-repro-map). The notes come from a read-only scan of each PDF and repository; nothing was run.');
+ P.forEach((r,i)=>{const code=r.repo?(r.rs==='cloned'?`repo looks runnable ${r.tk}/10`:'repo '+txt(nice(r.rs))):'no repository found',I=issues(r).map(x=>txt(x[0])).slice(0,ni);
+  if(brief){L.push(`${i+1}. ${cut(r.t,nt)} (arXiv ${r.id}). Claim: ${cut(r.src,40)}. ${code}${I.length?'. Flagged: '+I.map(x=>cut(x,60)).join('; '):''}`);return}
+  L.push(`${i+1}. ${cut(r.t,nt)} — https://arxiv.org/abs/${r.id}`);L.push(`   Claim to verify (${cut(r.src,60)}): ${cut(r.claim,nc)}`);if(nk&&r.crit)L.push(`   Counts as falsified if: ${cut(r.crit,nk)}`);
+  L.push('   Code: '+(r.repo?r.repo+' — ':'')+code);if(I.length)L.push('   Flagged: '+I.join('; '))});
+ L.push('The full scan record for every paper, keyed by arxiv_id, is in the dataset https://huggingface.co/datasets/gitgithan/neurips2026-repro-map-evidence (papers_evidence.json).');
+ L.push(brief?'Which should I reproduce first and why? Give the first three steps, the likeliest blocker, and a fair reduced-scale test.'
+  :'Please: (1) recommend which one to reproduce first and why, (2) give the first three concrete steps, (3) say what is most likely to block me and how to get round it, (4) say what reduced-scale version of the claim would still be a fair test.');
  return L.join('\n')}
-$('#bMLI').onclick=()=>{window.open('https://huggingface.co/chat/?mode=ml-intern&q='+encodeURIComponent(mliPrompt()),'_blank','noopener')};
+// the fullest version that fits the link is used: one or two shortlisted papers get every detail, five get a compact line each
+function mliLink(){let q='';for(let lv=0;lv<5;lv++){q=encodeURIComponent(mliPrompt(lv));if(q.length<=MLI_MAX)break}return 'https://huggingface.co/chat/?mode=ml-intern&q='+q.slice(0,MLI_MAX+400).replace(/%[0-9A-F]?$/,'')}
+$('#bMLI').onclick=()=>{window.open(mliLink(),'_blank','noopener')};
 $('#bOnly').onclick=()=>{if(!S.short.length){say('shortlist is empty');return}S.only=!S.only;render()};
 $('#share').onclick=()=>{save();(navigator.clipboard?navigator.clipboard.writeText(location.href):Promise.reject()).then(()=>say('link copied'),()=>say('copy the address bar'))};
 $('#reset').onclick=()=>{S.w=PRE.bal.slice();S.likes=[];S.short=[];S.cons={};S.only=false;$('#int').value='';$('#q').value='';$('#c_match').checked=false;$('#mfirst').checked=true;S.sort='score';S.dir=-1;$('#fTop').value='';$('#fTrk').value='';$('#sugg').innerHTML='';render()};

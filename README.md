@@ -24,7 +24,7 @@ The page is laid out as four steps.
 | 2 · Hide papers where… | Tick the things you cannot work around: no repository, a blocker, gated access, a hosted model, a native build, manual downloads, "harder than most", claim in the appendix, posters | Those papers disappear. Each switch shows how many papers it hides. These are yes/no facts, not preferences |
 | 3 · Read the evidence | Click a dot or a row | A panel lists every link, every scan finding with its file and line, hardware sentences, and the most similar papers |
 | 4 · Shortlist and compare | Press **+** on up to five papers (the hackathon limit), then "Compare side by side" | A table with one column per paper and one row per question you would ask before committing |
-| 5 · Ask ML Intern | Press **Ask ML Intern ↗** next to the shortlist | A question is written from your interests exactly as you typed them, the hide-switches you ticked, and your shortlisted papers (your top five if the shortlist is empty): each paper's claim, falsification criterion, repository and flagged issues. [ML Intern in HuggingChat](https://huggingface.co/chat/?mode=ml-intern) opens in a new tab with the question already typed into its message box, under your own Hugging Face account; read it, edit it if you like, and send. Details: [Ask ML Intern](#ask-ml-intern) |
+| 5 · Ask ML Intern | Press **Ask ML Intern ↗** next to the shortlist | A question is written from your interests exactly as you typed them, the hide-switches you ticked, and your shortlisted papers (your top five if the shortlist is empty), with each paper's claim, repository status and flagged issues, in as much detail as fits in a link. [ML Intern in HuggingChat](https://huggingface.co/chat/?mode=ml-intern) opens in a new tab with the question already typed into its message box, under your own Hugging Face account; read it, edit it if you like, and send. Details: [Ask ML Intern](#ask-ml-intern) |
 
 Also on the page:
 
@@ -244,7 +244,12 @@ The "sim" numbers, the lines on the map and "more like this" all use the cosine 
 
 ### Ask ML Intern
 
-The button opens ML Intern, Hugging Face's research agent, which now lives inside HuggingChat: https://huggingface.co/chat/?mode=ml-intern . The map does not run ML Intern and has no account or key of its own; you use ML Intern under your own Hugging Face account, on whatever terms it offers you. Nothing leaves the page until you press the button. When you do, the question is placed in the link that opens, so HuggingChat receives it and shows it in ML Intern's message box, ready for you to edit or send.
+The button opens ML Intern, Hugging Face's research agent, which now lives inside HuggingChat: https://huggingface.co/chat/?mode=ml-intern . The map does not run ML Intern and has no account or key of its own; you use ML Intern under your own Hugging Face account, on whatever terms it offers you. If you are signed out, you are asked to sign in first.
+
+Nothing leaves the page until you press the button. When you do, the question travels inside the link that opens, and ML Intern shows it in its message box, ready for you to edit or send. A link can only carry so much: a long one fails with "414 URI Too Long" when a signed-out visitor is sent through the sign-in page. So the question is kept under about 2,000 link characters, in two ways:
+
+- **It shrinks to fit.** With one or two papers it carries every detail below; with five it carries one compact line per paper.
+- **It points to the rest.** Every question ends with the address of the [evidence dataset](https://huggingface.co/datasets/gitgithan/neurips2026-repro-map-evidence), where the full scan record for each paper is stored by `arxiv_id`, so ML Intern can look up what did not fit. Whether it does so is up to ML Intern.
 
 What goes into the question:
 
@@ -256,7 +261,7 @@ What goes into the question:
 | Shortlisted nothing | The five highest papers by your score that pass your hide-switches and filters. This is the score order, even if you re-sorted the table by another column |
 | Moved weights, chose a preset, starred papers | Not written into the question, but they decide which five papers are highest |
 
-For each paper the question gives: the title and arXiv link; the claim to verify and where it is in the paper (first 260 characters); the organisers' falsification criterion (first 200 characters); the repository link with its turnkey score, or "no repository found"; and up to four flagged issues. It ends by asking which paper to reproduce first and why, the first three steps, what is most likely to block you, and what reduced-scale version of the claim would still be a fair test.
+For each paper, at full detail: the title and arXiv link; the claim to verify and where it is in the paper (first 260 characters); the organisers' falsification criterion (first 200 characters); the repository link with its turnkey score, or "no repository found"; and up to four flagged issues. In the compact form: the title, arXiv id, where the claim is in the paper, the repository status and one or two flagged issues. The question ends by asking which paper to reproduce first and why, the first three steps, what is most likely to block you, and what reduced-scale version of the claim would still be a fair test.
 
 Not included: the weight values, the map view, the compare table, and each paper's metric, comparison baseline, hardware sentences and reading time. Add those by hand if they matter to your question.
 
